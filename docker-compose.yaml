@@ -1,0 +1,7 @@
+services:
+  chat_app:
+    build: .
+    env_file: .env
+    ports:
+      - "$STREAMLIT_CHAT_APP_PORT:$STREAMLIT_CHAT_APP_PORT"
+    entrypoint: [ "python","-m","streamlit","run","--server.port","$STREAMLIT_CHAT_APP_PORT","/app/chat_app.py"]

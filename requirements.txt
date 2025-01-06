@@ -1,0 +1,10 @@
+add-parent-path
+requests
+pytest
+streamlit
+openai
+streamlit_msal
+pymongo[srv]
+pydantic
+pydantic-mongo
+streamlit-javascript
