@@ -25,26 +25,26 @@ jobs:
             docker push ghcr.io/${{ github.repository }}:${{github.sha}}
             docker push ghcr.io/${{ github.repository }}:latest
 
-        # - name: Checkout the deploy repo
-        #   uses: actions/checkout@v4
-        #   with:
-        #     repository: 'cent-ischool/chatapp-deploy'
-        #     path: 'chatapp-deploy'
-        #     github-server-url: 'https://github.com'
-        #     token: ${{ secrets.PAT }}
+        - name: Checkout the deploy repo
+          uses: actions/checkout@v4
+          with:
+            repository: 'cent-ischool/ist256-chatapp-deploy'
+            path: 'chatapp-deploy'
+            github-server-url: 'https://github.com'
+            token: ${{ secrets.PAT }}
 
-        # - name: Write the SHA to the deploy repo overwrite the values.yaml
-        #   run: |
-        #     echo ${{ github.sha }} > chatapp-deploy/SHA
-        #     sed -i 's/\(CI_BUILD:\).*/\1 ${{ github.sha }}/' chatapp-deploy/chatapp/values.yaml
+        - name: Write the SHA to the deploy repo overwrite the values.yaml
+          run: |
+            echo ${{ github.sha }} > chatapp-deploy/SHA
+            sed -i 's/\(CI_BUILD:\).*/\1 ${{ github.sha }}/' chatapp-deploy/chatapp/values.yaml
             
-        # - name: git commit and push trigger CD 
-        #   run: |
-        #     cd chatapp-deploy
-        #     git config --global user.name "Github Actions Ci"
-        #     git config --global user.email "github-actions-ci@cent-su.org"
-        #     git add SHA
-        #     git commit -a -m "${{ github.sha }}"
-        #     git push
+        - name: git commit and push trigger CD 
+          run: |
+            cd chatapp-deploy
+            git config --global user.name "Github Actions Ci"
+            git config --global user.email "github-actions-ci@cent-su.org"
+            git add SHA
+            git commit -a -m "${{ github.sha }}"
+            git push
 
         
