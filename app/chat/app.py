@@ -50,7 +50,7 @@ if not auth_data:
 # Everything is a go!
    
 if 'db' not in st.session_state:
-    db = PostgresDb(os.environ["SQLALCHEMY_DATABASE_URL"])
+    db = PostgresDb(os.environ["DATABASE_URL"])
     st.session_state.db = db
 
 if 'ai' not in st.session_state:

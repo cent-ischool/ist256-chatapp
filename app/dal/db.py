@@ -27,7 +27,7 @@ if __name__=='__main__':
         role="user", 
         content="Hello, world!"
     )
-    connnstr = os.environ["SQLALCHEMY_DATABASE_URL"]
+    connnstr = os.environ["DATABASE_URL"]
     print(f"Connecting to {connnstr}")
     db = PostgresDb(database_url=connnstr)
 
