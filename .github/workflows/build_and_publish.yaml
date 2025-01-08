@@ -46,5 +46,3 @@ jobs:
             git add SHA
             git commit -a -m "${{ github.sha }}"
             git push
-
-        
