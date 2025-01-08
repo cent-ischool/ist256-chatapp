@@ -5,6 +5,7 @@ import os
 import streamlit as st
 from streamlit_msal import Msal
 
+from ollamaapi import OllamaAPI
 from dal.models import AuthModel
 
 
@@ -30,7 +31,16 @@ if not auth_data:
     st.error(" ⬅️ Please sign in to continue.")
     st.stop()
 
+#####################################
 # Everything is a go!
+if 'ai' not in st.session_state:
+    ai = OllamaAPI(
+        ollama_host=os.environ["OLLAMA_HOST"],
+        model="dolphin3",
+        system_prompt="You are a helpful AI assistant that speaks like a pirate."
+    )
+    st.session_state.ai = ai
+
 st.markdown(
     """
 <style>
@@ -49,28 +59,21 @@ st.logo("chat/images/ai-platform.svg")
 st.write("The IST256 AI Tutor will launch soon.")
 st.caption(f"Hey, {email} talking about {subject} today.")
 
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
 # Display chat messages from history on app rerun
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
+for message in st.session_state.ai.history[1:]:
+    with st.chat_message(message["role"]): # <-- Inject avatar here
         st.markdown(message["content"])
+
 
 # React to user input
 if prompt := st.chat_input("What is up?"):
     # Display user message in chat message container
     with st.chat_message("user"):
         st.markdown(prompt)
-    # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt})
-
-    # call the LLM
-    response = f"Echo: {prompt}"
 
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
-        st.markdown(response)
-    # Add assistant response to chat history
-    st.session_state.messages.append({"role": "assistant", "content": response})
+        with st.spinner("Thinking..."):
+            response = st.write_stream(st.session_state.ai.stream_response(prompt))
+            # Add assistant response to chat history
+            st.session_state.ai.record_response(response)
