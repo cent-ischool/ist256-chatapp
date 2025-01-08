@@ -1,7 +1,4 @@
 from datetime import datetime, timezone
-from bson import ObjectId
-
-from dal.db import PostgresDb
 from dal.models import LogModel
 
 class ChatLogger:
