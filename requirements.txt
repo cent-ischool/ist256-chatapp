@@ -5,7 +5,7 @@ streamlit
 openai
 ollama
 streamlit_msal
-pymongo[srv]
 pydantic
-pydantic-mongo
 streamlit-javascript
+sqlalchemy
+psycopg2

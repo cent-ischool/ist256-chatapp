@@ -1,0 +1,10 @@
+TODO:
+
+
+X chat logging
+X AI should know your name
+- AI should know context (what are we talking about?)
+    - how to represent that in the UI?
+- RAG implementation to search the selected context as part of the convo
+- Azure auth in deployment
+

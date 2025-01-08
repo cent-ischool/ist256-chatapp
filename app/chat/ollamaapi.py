@@ -1,4 +1,5 @@
 from ollama import Client
+from constants import TEMPERATURE
 
 
 class OllamaAPI:
@@ -48,7 +49,8 @@ class OllamaAPI:
         response = self._client.chat(
             stream=True,
             model=self._model,
-            messages=messages 
+            messages=messages,
+            options={"temperature": TEMPERATURE} 
         )
         
         for chunk in response:
