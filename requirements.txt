@@ -9,3 +9,4 @@ pydantic
 streamlit-javascript
 sqlalchemy
 psycopg2
+sqlmodel
