@@ -3,6 +3,7 @@ requests
 pytest
 streamlit
 openai
+ollama
 streamlit_msal
 pymongo[srv]
 pydantic
