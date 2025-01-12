@@ -2,21 +2,27 @@ from  add_parent_path import add_parent_path
 add_parent_path(1)
 
 import os 
+from loguru import logger
 from uuid import uuid4
 import streamlit as st
 from streamlit_msal import Msal
 
-from constants import SYSTEM_PROMPT, ABOUT_PROMPT, CHAT_CONVERSATION_STYLE, HIDE_MENU_STYLE
-from ollamaapi import OllamaAPI
+import constants as const 
+from llmapi import LLMAPI
+from ragapi import RAGAPI
+from utils import hash_email_to_boolean, get_roster
+from llm.azureopenaillm import AzureOpenAILLM
+from llm.ollamallm import OllamaLLM
+
 from chatlogger import ChatLogger
 from dal.models import AuthModel
 from dal.db import PostgresDb
 
 # hide streamlit menu
-st.markdown(HIDE_MENU_STYLE, unsafe_allow_html=True)
+st.markdown(const.HIDE_MENU_STYLE, unsafe_allow_html=True)
 
 # logo
-st.logo("chat/images/ai-platform.svg")
+st.logo(const.LOGO)
 
 with st.sidebar as sidebar:
     st.title("IST256 AI Tutor")
@@ -30,58 +36,114 @@ with st.sidebar as sidebar:
     )
 
     if auth_data:
-        st.session_state.auth_data = auth_data
-        st.session_state.auth_model = AuthModel.from_auth_data(auth_data)
-        st.session_state.sessionid = str(uuid4()) if 'sessionid' not in st.session_state else st.session_state.sessionid
-        #subject = st.selectbox("Select a subject", ["Math", "Science", "English", "History"])
-        with st.expander("❓About this app"):
-            st.markdown(ABOUT_PROMPT)
-            #st.write(auth_data)
+        if 'validated' not in st.session_state or st.session_state.validated not in ["roster", "exception"]:
+            st.session_state.auth_data = auth_data
+            st.session_state.auth_model = AuthModel.from_auth_data(auth_data)
+            valid_users = get_roster(
+                minio_host_port=os.environ["S3_HOST"],
+                access_key=os.environ["S3_ACCESS_KEY"],
+                secret_key=os.environ["S3_SECRET_KEY"],
+                bucket_name=os.environ["S3_BUCKET"],
+                object_key=os.environ["ROSTER_FILE"]
+            )
+            random_rag_users = [ user for user in os.environ["EXCEPTION_RAG_USERS"].split(",") ]
 
-if not auth_data:
-    st.markdown("### Welcome to the IST256 AI Tutor")
-    st.info("⬅️ Please sign with your SU credentials by clicking `>` next to the logo.")
-    st.session_state.clear()
-    st.stop()
+            if st.session_state.auth_model.email in random_rag_users:
+                st.session_state.validated = "exception"
+            elif st.session_state.auth_model.email in valid_users:
+                st.session_state.validated = "roster"
+            else: # Not authorized
+                st.error("🥺 You are unable to use this service as you are listed on the class roster. If you feel this is error, please contact mafudge@syr.edu.")
+                st.session_state.clear()
+                st.stop()
 
 
+            st.session_state.sessionid = str(uuid4()) if 'sessionid' not in st.session_state else st.session_state.sessionid
+            logger.info(f"email={st.session_state.auth_model.email} validated={st.session_state.validated}, sessionid={st.session_state.sessionid}") 
+            with st.expander("❓About this app"):
+                st.markdown(const.ABOUT_PROMPT)
+                #st.write(auth_data)
+
+    else: # Not authenticated
+        st.markdown("### Welcome to the IST256 AI Tutor")
+        st.info("⬅️ Please sign with your SU credentials by clicking `>` next to the logo.")
+        st.session_state.clear()
+        st.stop()
 
 #####################################
-# Everything is a go!
+# Everything is a go. You are authenticated and authorized
    
 if 'db' not in st.session_state:
     db = PostgresDb(os.environ["DATABASE_URL"])
     st.session_state.db = db
 
-if 'ai' not in st.session_state:
-    ai = OllamaAPI(
-        ollama_host=os.environ["OLLAMA_HOST"],
-        model="dolphin3",
-        system_prompt=SYSTEM_PROMPT
-    )
-    st.session_state.ai = ai
+if 'rag' not in st.session_state:
+    import random
+    if st.session_state.auth_model.email in random_rag_users:
+        st.session_state.is_rag = random.choice([True, False])
+        logger.info(f"rag={st.session_state.is_rag}, assignment=random")
+    else:
+        st.session_state.is_rag = hash_email_to_boolean(st.session_state.auth_model.email)
+        logger.info(f"rag={st.session_state.is_rag}, assignment=emailhash")
 
+    rag = RAGAPI(
+        huggingface_token=os.environ["HUGGINGFACE_TOKEN"],
+        huggingface_embedding_model="hkunlp/instructor-base",
+        chroma_host=os.environ['CHROMADB_HOST'],
+        chroma_port=os.environ['CHROMADB_PORT'],
+        chroma_auth_token=os.environ['CHROMA_CLIENT_AUTH_TOKEN'],
+        collection_name="ist256"
+    )
+    st.session_state.rag = rag
+
+
+if 'ai' not in st.session_state:
+    o_llm = OllamaLLM(
+        host_url=os.environ["OLLAMA_HOST"],
+        temperature=const.TEMPERATURE, 
+        model="dolphin3")
+    a_llm = AzureOpenAILLM(
+        api_key=os.environ["AZURE_OPENAI_API_KEY"],
+        api_version=os.environ["AZURE_OPENAI_API_VERSION"],
+        endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
+        model="gpt-4o-mini",
+        temperature=const.TEMPERATURE
+    )    
+    
+    if os.environ.get("LLM","azure") == "ollama":
+        ai = LLMAPI(llm=o_llm, system_prompt=const.SYSTEM_PROMPT)
+        st.session_state.assistant_icon_offset = 2 + int(st.session_state.is_rag)
+    else: # default is azure
+        ai = LLMAPI(llm=a_llm, system_prompt=const.SYSTEM_PROMPT)
+        st.session_state.assistant_icon_offset = 0 + int(st.session_state.is_rag)
+    st.session_state.ai = ai
+    logger.info(f"env:LLM={os.environ.get('LLM')}, llm_model={st.session_state.ai._model}, temperature={st.session_state.ai._temperature}")
+    logger.info(f"assistant_icon_offset={st.session_state.assistant_icon_offset}")
+
+# for now
 avatars =  {
-    'user': "chat/images/question.svg",
-    'assistant': "chat/images/ai-platform.svg",
+    'user': const.USER_ICON,
+    'assistant': const.ASSISTANT_ICONS[st.session_state.assistant_icon_offset]
 }
 
-logger = ChatLogger(st.session_state.db)
+# let's log what we havbe 
+logger.info(f"avatars={avatars}")
+
+# setup logger
+chat_logger = ChatLogger(st.session_state.db, model=st.session_state.ai._model,rag=False) # false for now
 
 
 # left/right chat windows
-st.markdown(CHAT_CONVERSATION_STYLE,unsafe_allow_html=True)
+st.markdown(const.CHAT_CONVERSATION_STYLE,unsafe_allow_html=True)
 
 email = st.session_state.auth_model.email
 session = st.session_state.sessionid
-
-#st.write(f"Hey, {email} talking about {subject} today.")
 
 if 'first_message' not in st.session_state:
     st.session_state.first_message = True
     with st.chat_message("assistant", avatar=avatars["assistant"]):
         with st.spinner("Thinking..."):
-            first_message = f"Hi. My name is {st.session_state.auth_model.firstname}."
+            first_message = f"Hi. My name is {st.session_state.auth_model.firstname}. Please rememeber it and call me by my on occasion."
             response = st.write_stream(st.session_state.ai.stream_response(first_message))
 
 # Display chat messages from history on app rerun
@@ -91,16 +153,24 @@ for message in st.session_state.ai.history[2:]:
 
 
 # React to user input
-if prompt := st.chat_input("Type in your question..."):
+if query := st.chat_input("Type in your question..."):
     # Display user message in chat message container
     with st.chat_message("user", avatar=avatars["user"]):
-        st.markdown(prompt)
+        st.markdown(query)
 
     # Display assistant response in chat message container
+    # this is the main RAG algorithm... simple rag.
     with st.chat_message("assistant", avatar=avatars["assistant"]):
         with st.spinner("Thinking..."):
-            logger.log_user_prompt(session, email, prompt)
-            response = st.write_stream(st.session_state.ai.stream_response(prompt))
+            if st.session_state.is_rag:
+                docs = st.session_state.rag.search(query)
+                rag_prompt = st.session_state.rag.inject_prompt(query=query, rag_template=const.RAG_PROMPT_TEMPLATE, results=docs)
+                user_prompt = rag_prompt
+            else:
+                user_prompt = query
+
+            chat_logger.log_user_prompt(session, email, user_prompt)
+            response = st.write_stream(st.session_state.ai.stream_response(user_prompt))
             # Add assistant response to chat history
-            logger.log_assistant_response(session, email, response)
+            chat_logger.log_assistant_response(session, email, response)
             st.session_state.ai.record_response(response)

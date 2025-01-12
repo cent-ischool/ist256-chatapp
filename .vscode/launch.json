@@ -5,14 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Streamlit: Admin",
-            "cwd": "${workspaceFolder}/app",
-            "request" : "launch",
+            "name": "Python Debugger: Current File",
             "type": "debugpy",
-            "module": "streamlit",
-            "args": ["run", "./admin/app.py"],
+            "request": "launch",
+            "program": "${file}",
             "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/app",
             "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/app"
+            },
             "pathMappings": [
                 {
                     "localRoot": "${workspaceFolder}",
@@ -22,13 +24,19 @@
         },
         {
             "name": "Streamlit: App",
-            "request" : "launch",
+            "request": "launch",
             "type": "debugpy",
             "module": "streamlit",
-            "args": ["run", "./chat/app.py"],
+            "args": [
+                "run",
+                "./chat/app.py"
+            ],
             "cwd": "${workspaceFolder}/app",
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/app"
+            },
             "pathMappings": [
                 {
                     "localRoot": "${workspaceFolder}",
@@ -36,6 +44,5 @@
                 }
             ]
         }
-
     ]
 }

@@ -1,7 +1,21 @@
 TEMPERATURE=0.3
+LOGO="chat/images/ai-platform.svg"
+USER_ICON="chat/images/question.svg"
+ASSISTANT_AZURE_NORAG_ICON="chat/images/assistant-azure-norag.svg"
+ASSISTANT_AZURE_RAG_ICON="chat/images/assistant-azure-rag.svg"
+ASSISTANT_OLLAMA_NORAG_ICON="chat/images/assistant-ollama-norag.svg"
+ASSISTANT_OLLAMA_RAG_ICON="chat/images/assistant-ollama-rag.svg"
+ASSISTANT_ICONS = [
+    ASSISTANT_AZURE_NORAG_ICON,
+    ASSISTANT_AZURE_RAG_ICON,
+    ASSISTANT_OLLAMA_NORAG_ICON,
+    ASSISTANT_OLLAMA_RAG_ICON
+]
 SYSTEM_PROMPT='''
 Your name is Fudgebot. You're a helpful AI Python programming tutor for college students enrolled in an introductory Python programming course.
-Do not answer questions that are not Python programming related, instead say "I'm sorry, I can't help with that."
+You can talk about yourself and your capabilities.
+You can try to help with programming assignments and labs.
+Do not answer questions that are not Python programming or course related.
 Keep your answers short and simple. Make sure to provide explanations for any code you write.
 
 Some instructions for your responses:
@@ -11,17 +25,16 @@ Some instructions for your responses:
 - use f-strings for string interpolation.
 - avoid the `class` keyword as students do not learn to create custom Python classes in this course.
 '''
-
-
-RAG_PROMPT='''
+RAG_PROMPT_TEMPLATE='''
 INSTRUCTIONS:
 Answer the question based on the document and your understanding of Python programming. 
+If you write python code, make sure to explain what it does.
 
 DOCUMENT:
 {documents}
 
 QUESTION:
-{prompt}
+{query}
 '''
 ABOUT_PROMPT='''
 ### What is this?
@@ -31,7 +44,8 @@ Like a human tutor, its here to help you learn programming concepts and apply th
 
 ### Tips For Use
 
-- Your chat session history will restart when you are logged out.
+- The bot should remmeber things said in your conversation.
+- Your conversation (chat session history) will restart when you are logged out or when you hard-refresh the page.
 - Try to be specific with your questions, and use terminology from the course.
 - Experiment with it! Ask it questions, see what it can do.
 

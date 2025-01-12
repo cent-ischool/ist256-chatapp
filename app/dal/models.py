@@ -26,5 +26,7 @@ class LogModel(SQLModel, table=True):
     sessionid: str
     userid: str
     timestamp: str
+    model: str
+    rag: bool
     role: str
     content: str

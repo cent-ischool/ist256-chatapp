@@ -10,3 +10,10 @@ streamlit-javascript
 sqlalchemy
 psycopg2
 sqlmodel
+loguru
+chromadb-client
+langchain-chroma
+sentence-transformers
+langchain-huggingface
+huggingface_hub
+minio
