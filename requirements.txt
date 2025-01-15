@@ -11,12 +11,12 @@ sqlalchemy
 psycopg2
 sqlmodel
 loguru
-chromadb-client
-langchain-chroma
-sentence-transformers
-langchain-huggingface
-langchain-text-splitters
-huggingface_hub
 minio
 nbformat
 nbconvert
+# chromadb-client
+# langchain-chroma
+# sentence-transformers
+# langchain-huggingface
+# langchain-text-splitters
+# huggingface_hub

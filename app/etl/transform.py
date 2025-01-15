@@ -6,8 +6,8 @@ import os
 
 import nbformat
 from nbconvert import MarkdownExporter
-from langchain_text_splitters import MarkdownHeaderTextSplitter
-from langchain_core.documents import Document
+# from langchain_text_splitters import MarkdownHeaderTextSplitter
+# from langchain_core.documents import Document
 
 class NotebookTransformer:
   
@@ -40,21 +40,21 @@ class NotebookTransformer:
                 logger.info(f"removed cells after markdown={markdown}, cells_removed={total_cells - i}")
                 break
 
-    def split(self) -> List[Document]:
-        '''
-        Break down into sections
-        '''
-        headers_to_split_on = [
-            ("#", "Header 1"),
-            ("##", "Header 2"),
-            ("###", "Header 3"),
-        ]
-        splitter=MarkdownHeaderTextSplitter(headers_to_split_on, return_each_line=False, strip_headers=False)    
-        docs = splitter.split_text(self._markdown)
-        logger.info(f"split notebook into count={len(docs)}, each with metadata={self._metadata}")
-        for doc in docs:            
-            doc.metadata = self._metadata
-        return docs    
+    # def split(self) -> List[Document]:
+    #     '''
+    #     Break down into sections
+    #     '''
+    #     headers_to_split_on = [
+    #         ("#", "Header 1"),
+    #         ("##", "Header 2"),
+    #         ("###", "Header 3"),
+    #     ]
+    #     splitter=MarkdownHeaderTextSplitter(headers_to_split_on, return_each_line=False, strip_headers=False)    
+    #     docs = splitter.split_text(self._markdown)
+    #     logger.info(f"split notebook into count={len(docs)}, each with metadata={self._metadata}")
+    #     for doc in docs:            
+    #         doc.metadata = self._metadata
+    #     return docs    
 
 def extract_metadata(notebook_filename):
     doc_source = os.path.basename(notebook_filename)

@@ -9,7 +9,8 @@ from streamlit_msal import Msal
 
 import constants as const 
 from llmapi import LLMAPI
-from ragapi import RAGAPI
+# from ragapi import RAGAPI
+from docloader import FileCacheDocLoader
 from utils import hash_email_to_boolean, get_roster
 from llm.azureopenaillm import AzureOpenAILLM
 from llm.ollamallm import OllamaLLM
@@ -18,6 +19,22 @@ from chatlogger import ChatLogger
 from dal.models import AuthModel
 from dal.db import PostgresDb
 
+
+def switch_context():
+    logger.info(f"switching to context={st.session_state['context']}")
+    #delete context_message
+    del st.session_state['context_message']
+    # clear chat history / memory
+    if 'ai' in st.session_state:
+        st.session_state.ai.clear_history()
+    # create new user sesson id
+    st.session_state.sessionid = str(uuid4())
+
+
+# page config
+st.set_page_config(
+    page_title=const.TITLE, page_icon=const.LOGO, layout="centered", initial_sidebar_state="expanded", menu_items=None)
+
 # hide streamlit menu
 st.markdown(const.HIDE_MENU_STYLE, unsafe_allow_html=True)
 
@@ -25,7 +42,7 @@ st.markdown(const.HIDE_MENU_STYLE, unsafe_allow_html=True)
 st.logo(const.LOGO)
 
 with st.sidebar as sidebar:
-    st.title("IST256 AI Tutor")
+    st.title(const.TITLE)
 
     auth_data = Msal.initialize_ui(
         client_id=os.environ["MSAL_CLIENT_ID"], 
@@ -36,6 +53,7 @@ with st.sidebar as sidebar:
     )
 
     if auth_data:
+        # Not authorized yet?
         if 'validated' not in st.session_state or st.session_state.validated not in ["roster", "exception"]:
             st.session_state.auth_data = auth_data
             st.session_state.auth_model = AuthModel.from_auth_data(auth_data)
@@ -52,21 +70,27 @@ with st.sidebar as sidebar:
                 st.session_state.validated = "exception"
             elif st.session_state.auth_model.email in valid_users:
                 st.session_state.validated = "roster"
-            else: # Not authorized
+            else: # Not allowed to be authorized
                 st.error("🥺 You are unable to use this service as you are listed on the class roster. If you feel this is error, please contact mafudge@syr.edu.")
                 st.session_state.clear()
                 st.stop()
 
+        # You are now authorized
+        st.session_state.file_cache = FileCacheDocLoader(os.environ['LOCAL_FILE_CACHE'])
+        st.session_state.sessionid = str(uuid4()) if 'sessionid' not in st.session_state else st.session_state.sessionid
+        context_list = ["General Python"]  + st.session_state.file_cache.get_doc_list()
+        logger.info(f"docs_in_cache={st.session_state.file_cache.get_doc_list()}")
 
-            st.session_state.sessionid = str(uuid4()) if 'sessionid' not in st.session_state else st.session_state.sessionid
-            logger.info(f"email={st.session_state.auth_model.email} validated={st.session_state.validated}, sessionid={st.session_state.sessionid}") 
-            with st.expander("❓About this app"):
-                st.markdown(const.ABOUT_PROMPT)
-                #st.write(auth_data)
+        logger.info(f"email={st.session_state.auth_model.email} validated={st.session_state.validated}, sessionid={st.session_state.sessionid}") 
+        st.selectbox("Select a context", context_list, key="context", on_change=switch_context)
+        logger.info(f"context={st.session_state.context}")
+        with st.expander("‼️README‼️"):
+            st.markdown(const.ABOUT_PROMPT)
+            #st.write(auth_data)
 
     else: # Not authenticated
         st.markdown("### Welcome to the IST256 AI Tutor")
-        st.info("⬅️ Please sign with your SU credentials by clicking `>` next to the logo.")
+        st.info("Please sign with your SU credentials by clicking  the button above.")
         st.session_state.clear()
         st.stop()
 
@@ -77,7 +101,9 @@ if 'db' not in st.session_state:
     db = PostgresDb(os.environ["DATABASE_URL"])
     st.session_state.db = db
 
-if 'rag' not in st.session_state:
+if 'is_rag' not in st.session_state:
+    # figure out if user is assgined to RAG for experiment
+    # not really "rag" but injecting the context into the user prompt history.
     import random
     if st.session_state.auth_model.email in random_rag_users:
         st.session_state.is_rag = random.choice([True, False])
@@ -85,17 +111,6 @@ if 'rag' not in st.session_state:
     else:
         st.session_state.is_rag = hash_email_to_boolean(st.session_state.auth_model.email)
         logger.info(f"rag={st.session_state.is_rag}, assignment=emailhash")
-
-    rag = RAGAPI(
-        huggingface_token=os.environ["HUGGINGFACE_TOKEN"],
-        huggingface_embedding_model="hkunlp/instructor-base",
-        chroma_host=os.environ['CHROMADB_HOST'],
-        chroma_port=os.environ['CHROMADB_PORT'],
-        chroma_auth_token=os.environ['CHROMA_CLIENT_AUTH_TOKEN'],
-        collection_name="ist256"
-    )
-    st.session_state.rag = rag
-
 
 if 'ai' not in st.session_state:
     o_llm = OllamaLLM(
@@ -120,7 +135,7 @@ if 'ai' not in st.session_state:
     logger.info(f"env:LLM={os.environ.get('LLM')}, llm_model={st.session_state.ai._model}, temperature={st.session_state.ai._temperature}")
     logger.info(f"assistant_icon_offset={st.session_state.assistant_icon_offset}")
 
-# for now
+# set the avatars
 avatars =  {
     'user': const.USER_ICON,
     'assistant': const.ASSISTANT_ICONS[st.session_state.assistant_icon_offset]
@@ -130,27 +145,38 @@ avatars =  {
 logger.info(f"avatars={avatars}")
 
 # setup logger
-chat_logger = ChatLogger(st.session_state.db, model=st.session_state.ai._model,rag=False) # false for now
-
+chat_logger = ChatLogger(st.session_state.db, model=st.session_state.ai._model,rag=st.session_state.is_rag) 
 
 # left/right chat windows
 st.markdown(const.CHAT_CONVERSATION_STYLE,unsafe_allow_html=True)
 
 email = st.session_state.auth_model.email
 session = st.session_state.sessionid
+context = st.session_state['context']
 
-if 'first_message' not in st.session_state:
-    st.session_state.first_message = True
+# Setup the context for "rag"
+if 'context_message' not in st.session_state:
+    st.session_state.context_message = True
     with st.chat_message("assistant", avatar=avatars["assistant"]):
         with st.spinner("Thinking..."):
-            first_message = f"Hi. My name is {st.session_state.auth_model.firstname}. Please rememeber it and call me by my on occasion."
-            response = st.write_stream(st.session_state.ai.stream_response(first_message))
+            greeting = f"Hi. My name is {st.session_state.auth_model.firstname}. Please rememeber it and call me by my on occasion.\n"
+            if st.session_state['context'] != "General Python":
+                if st.session_state.is_rag:
+                    content = st.session_state.file_cache.load_cached_document(context)
+                    context_message = greeting + \
+                        const.CONTEXT_PROMPT_TEMPLATE.format(assignment=context, content=content)
+                else:
+                    context_message = greeting + \
+                        const.CONTEXT_PROMPT_TEMPLATE_NO_CONTENT.format(assignment=context)
+            else:
+                context_message = greeting
+            
+        response = st.write_stream(st.session_state.ai.stream_response(context_message))
 
 # Display chat messages from history on app rerun
 for message in st.session_state.ai.history[2:]:
     with st.chat_message(message["role"], avatar=avatars[message['role']]): 
         st.markdown(message["content"])
-
 
 # React to user input
 if query := st.chat_input("Type in your question..."):
@@ -162,15 +188,9 @@ if query := st.chat_input("Type in your question..."):
     # this is the main RAG algorithm... simple rag.
     with st.chat_message("assistant", avatar=avatars["assistant"]):
         with st.spinner("Thinking..."):
-            if st.session_state.is_rag:
-                docs = st.session_state.rag.search(query)
-                rag_prompt = st.session_state.rag.inject_prompt(query=query, rag_template=const.RAG_PROMPT_TEMPLATE, results=docs)
-                user_prompt = rag_prompt
-            else:
-                user_prompt = query
-
-            chat_logger.log_user_prompt(session, email, user_prompt)
+            user_prompt = query
+            chat_logger.log_user_prompt(session, email, context, user_prompt)
             response = st.write_stream(st.session_state.ai.stream_response(user_prompt))
             # Add assistant response to chat history
-            chat_logger.log_assistant_response(session, email, response)
+            chat_logger.log_assistant_response(session, email, context, response)
             st.session_state.ai.record_response(response)

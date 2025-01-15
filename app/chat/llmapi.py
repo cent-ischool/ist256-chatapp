@@ -27,6 +27,10 @@ class LLMAPI:
             }
         )
 
+    def clear_history(self):
+        # just system prompt 
+        self._messages = [ self._messages[0] ]         
+
     @property
     def history(self):
         return self._messages
@@ -75,13 +79,29 @@ if __name__ == '__main__':
         model="dolphin3",
         temperature=0.3
     )
-    llmapi1 = LLMAPI(llm=ollm, model="llama3", temperature=0.7)
+    llmapi1 = LLMAPI(llm=ollm, model="llama3", temperature=0.7, system_prompt="you only know about photosynthesis. only answer questions about photosynthesis")
     response1 = llmapi1.stream_response("explain photosynthesis like I'm a 5 year old?")
     assemble = ""
     for chunk in response1:
         assemble += chunk
     print(assemble)
-
+    response1 = llmapi1.stream_response("explain photosynthesis like I'm a 10 year old?")
+    assemble = ""
+    for chunk in response1:
+        assemble += chunk
+    print(assemble)
+    response1 = llmapi1.stream_response("what is the capital of France?")
+    assemble = ""
+    for chunk in response1:
+        assemble += chunk
+    print(assemble)
+    llmapi1.clear_history()
+    response1 = llmapi1.stream_response("what is the last thing I asked you?")
+    assemble = ""
+    for chunk in response1:
+        assemble += chunk
+    print(assemble)
+    print("========================================")
     llmapi2 = LLMAPI(llm=allm)
     response2 = llmapi2.stream_response("explain photosynthesis like I'm a 5 year old?")
     assemble = ""

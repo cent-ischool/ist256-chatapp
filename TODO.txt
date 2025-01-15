@@ -1,22 +1,26 @@
 TODO:
 
+x library to build contexts from ipynb
+x library to load contexts in the app
+x build dropdown for selecting a context (lab-04, homework-04 etc.)
+x inject context into memory
+x add context to logging 
+x generate a query on behalf of the user I'd like to ask about....
+
 X chat logging
 X AI should know your name
 x AI should know context (what are we talking about?)
     - how to represent that in the UI????
-- RAG implementation to search the selected context as part of the convo
-- https://github.com/NirDiamant/RAG_Techniques/blob/main/all_rag_techniques/fusion_retrieval.ipynb
-- rag retrieval with similarity score, if not 50% match then don't include.
 
 x Azure auth in deployment
 x different AI icons depending on the setup azure ollama, rag, norag
 
-- get this RAG working with the prompts in the chatapp
-- same system prompt (see below)
-- different user prompt goes from raw to ragbot (see below)
+x get this RAG working with the prompts in the chatapp
+x same system prompt (see below)
+x different user prompt goes from raw to ragbot (see below)
 x configurable at runtime gpt 4o-mini or ollama 
-- add a few more sources to the vector store
-- limit access to roster of students ??
-- random assignment by netid. mafudge can pick
-- setup vecotor store on storage.cent-su.org
-- change logging to include rag=T/F, and ai model
+x add a few more sources to the vector store
+x limit access to roster of students ??
+x random assignment by netid. mafudge can pick
+x setup vecotor store on storage.cent-su.org
+x change logging to include rag=T/F, and ai model

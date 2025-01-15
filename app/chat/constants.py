@@ -1,4 +1,5 @@
 TEMPERATURE=0.3
+TITLE="IST256 AI Tutor"
 LOGO="chat/images/ai-platform.svg"
 USER_ICON="chat/images/question.svg"
 ASSISTANT_AZURE_NORAG_ICON="chat/images/assistant-azure-norag.svg"
@@ -25,27 +26,41 @@ Some instructions for your responses:
 - use f-strings for string interpolation.
 - avoid the `class` keyword as students do not learn to create custom Python classes in this course.
 '''
-RAG_PROMPT_TEMPLATE='''
-INSTRUCTIONS:
-Answer the question based on the document and your understanding of Python programming. 
-If you write python code, make sure to explain what it does.
+CONTEXT_PROMPT_TEMPLATE='''
+I would like to ask you questions about the assignment: {assignment}. Please acknowledge that you are ready to answer questions about this assignment.
 
-DOCUMENT:
-{documents}
+Here is the content of that assignment:
 
-QUESTION:
-{query}
+{content}
 '''
+CONTEXT_PROMPT_TEMPLATE_NO_CONTENT='''
+I would like to ask you questions about the assignment: {assignment}. Please acknowledge that you are ready to answer questions about this assignment.
+'''
+
+
+# RAG_PROMPT_TEMPLATE='''
+# INSTRUCTIONS:
+# Answer the question based on the document and your understanding of Python programming. 
+# If you write python code, make sure to explain what it does.
+
+# DOCUMENT:
+# {documents}
+
+# QUESTION:
+# {query}
+# '''
 ABOUT_PROMPT='''
 ### What is this?
 This app is an AI Tutor Bot designed for IST256, an introductory programming course in Python.
 You are welcome to ask the bot course-related questions about Python programming, assignments or labs.
 Like a human tutor, its here to help you learn programming concepts and apply them using the Python programming language.
 
-### Tips For Use
+### Tips
 
-- The bot should remmeber things said in your conversation.
-- Your conversation (chat session history) will restart when you are logged out or when you hard-refresh the page.
+- The bot will remmeber things said in your conversation.
+- Select a context to talk about a lab or homework, "General Python" for everything else.
+- When you switch conxtexts, your chat history/memory will be cleared.
+- Your chat history/memory will be cleared when you hard-refresh the page or logout.
 - Try to be specific with your questions, and use terminology from the course.
 - Experiment with it! Ask it questions, see what it can do.
 
