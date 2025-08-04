@@ -106,10 +106,14 @@ if 'is_rag' not in st.session_state:
     # not really "rag" but injecting the context into the user prompt history.
     import random
     if st.session_state.auth_model.email in random_rag_users:
-        st.session_state.is_rag = random.choice([True, False])
+        # always assign RAG to these users
+        st.session_state.is_rag = True 
+        # st.session_state.is_rag = random.choice([True, False])
         logger.info(f"rag={st.session_state.is_rag}, assignment=random")
     else:
-        st.session_state.is_rag = hash_email_to_boolean(st.session_state.auth_model.email)
+        #always assign RAG to these users
+        st.session_state.is_rag = True
+        # st.session_state.is_rag = hash_email_to_boolean(st.session_state.auth_model.email)
         logger.info(f"rag={st.session_state.is_rag}, assignment=emailhash")
 
 if 'ai' not in st.session_state:
