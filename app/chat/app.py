@@ -71,7 +71,7 @@ with st.sidebar as sidebar:
             elif st.session_state.auth_model.email in valid_users:
                 st.session_state.validated = "roster"
             else: # Not allowed to be authorized
-                st.error("🥺 You are unable to use this service as you are listed on the class roster. If you feel this is error, please contact mafudge@syr.edu.")
+                st.error(f"🥺 You are unable to use this service as you are NOT listed on the class roster: '{os.environ['ROSTER_FILE']}' . If you feel this is error, please contact mafudge@syr.edu.")
                 st.session_state.clear()
                 st.stop()
 
@@ -86,7 +86,7 @@ with st.sidebar as sidebar:
         logger.info(f"context={st.session_state.context}")
         with st.expander("‼️README‼️"):
             st.markdown(const.ABOUT_PROMPT)
-            #st.write(auth_data)
+            st.write(os.environ["ROSTER_FILE"])
 
     else: # Not authenticated
         st.markdown("### Welcome to the IST256 AI Tutor")

@@ -67,6 +67,7 @@ Like a human tutor, its here to help you learn programming concepts and apply th
 - Try to be specific with your questions, and use terminology from the course.
 - Experiment with it! Ask it questions, see what it can do.
 
+-----
 '''
 
 CHAT_CONVERSATION_STYLE="""
