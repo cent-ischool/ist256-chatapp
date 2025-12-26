@@ -11,7 +11,14 @@
 	},	
 	"runArgs": [
         "--env-file", "${localWorkspaceFolder}/.env"
-    ]
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"GitHub.copilot-chat"
+			]
+		}
+	}
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 

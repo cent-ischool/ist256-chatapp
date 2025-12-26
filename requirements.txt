@@ -14,6 +14,8 @@ loguru
 minio
 nbformat
 nbconvert
+python-dotenv
+PyYAML
 # chromadb-client
 # langchain-chroma
 # sentence-transformers

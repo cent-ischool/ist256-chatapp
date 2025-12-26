@@ -4,6 +4,7 @@ add_parent_path(1)
 import os 
 from loguru import logger
 from uuid import uuid4
+import yaml
 import streamlit as st
 from streamlit_msal import Msal
 
@@ -16,8 +17,9 @@ from llm.azureopenaillm import AzureOpenAILLM
 from llm.ollamallm import OllamaLLM
 
 from chatlogger import ChatLogger
-from dal.models import AuthModel
+from dal.models import AuthModel, ConfigurationModel
 from dal.db import PostgresDb
+from dal.s3 import S3Client
 
 
 def switch_context():
@@ -43,6 +45,7 @@ st.logo(const.LOGO)
 
 with st.sidebar as sidebar:
     st.title(const.TITLE)
+    st.text(f"v{const.VERSION}",)
 
     auth_data = Msal.initialize_ui(
         client_id=os.environ["MSAL_CLIENT_ID"], 
@@ -64,9 +67,12 @@ with st.sidebar as sidebar:
                 bucket_name=os.environ["S3_BUCKET"],
                 object_key=os.environ["ROSTER_FILE"]
             )
-            random_rag_users = [ user for user in os.environ["EXCEPTION_RAG_USERS"].split(",") ]
+            admin_users = [ user.lower().strip() for user in os.environ["ADMIN_USERS"].split(",") ]
+            exception_users = [ user.lower().strip() for user in os.environ["ROSTER_EXCEPTION_USERS"].split(",") ]
 
-            if st.session_state.auth_model.email in random_rag_users:
+            if st.session_state.auth_model.email in admin_users:
+                st.session_state.validated = "admin"
+            elif st.session_state.auth_model.email in exception_users:
                 st.session_state.validated = "exception"
             elif st.session_state.auth_model.email in valid_users:
                 st.session_state.validated = "roster"
@@ -95,9 +101,49 @@ with st.sidebar as sidebar:
         st.session_state.clear()
         st.stop()
 
+    # Simple in-app navigation: Chat | Settings
+    if st.session_state.validated == "admin":
+        with st.expander("Admin Menu"):
+            page = st.radio("Go to page", ["Chat", "Settings", "Prompts", "Session"], key="page_nav")
+    else:
+        page = "Chat"
+
 #####################################
 # Everything is a go. You are authenticated and authorized
-   
+
+if page == "Settings" and st.session_state.validated == "admin":
+    import settings
+    settings.show_settings()
+    st.stop()
+
+if page == "Prompts" and st.session_state.validated == "admin":
+    import prompts
+    prompts.show_prompts()
+    st.stop()
+
+if page == "Session" and st.session_state.validated == "admin":
+    import session
+    session.show_session()
+    st.stop()
+
+# ----------------- Load Up the Session State -----------------
+if 's3Client' not in st.session_state:
+    s3client = S3Client(
+        host_port=os.environ["S3_HOST"],
+        access_key=os.environ["S3_ACCESS_KEY"],
+        secret_key=os.environ["S3_SECRET_KEY"],
+        secure=False
+    )
+    st.session_state.s3Client = s3client
+
+if 'config' not in st.session_state:
+    config_yaml = st.session_state.s3Client.get_text_file(os.environ["S3_BUCKET"], os.environ["CONFIG_FILE"])
+    prompts_yaml = st.session_state.s3Client.get_text_file(os.environ["S3_BUCKET"], os.environ["PROMPTS_FILE"])
+    config = ConfigurationModel.from_yaml_string(config_yaml)
+    prompts = yaml.safe_load(prompts_yaml)['prompts']
+    st.session_state.config = config
+    st.session_state.system_prompt_text = prompts[config.system_prompt]
+
 if 'db' not in st.session_state:
     db = PostgresDb(os.environ["DATABASE_URL"])
     st.session_state.db = db
@@ -106,40 +152,43 @@ if 'is_rag' not in st.session_state:
     # figure out if user is assgined to RAG for experiment
     # not really "rag" but injecting the context into the user prompt history.
     import random
-    if st.session_state.auth_model.email in random_rag_users:
+    if st.session_state.validated == "exception" or st.session_state.validated == "admin":
         # always assign RAG to these users
         st.session_state.is_rag = True 
         # st.session_state.is_rag = random.choice([True, False])
-        logger.info(f"rag={st.session_state.is_rag}, assignment=random")
+        logger.info(f"rag={st.session_state.is_rag}, assignment=exception")
     else:
-        #always assign RAG to these users
-        st.session_state.is_rag = True
+        # TODO: Make this a setting?
         # st.session_state.is_rag = hash_email_to_boolean(st.session_state.auth_model.email)
+        # Override: always assign RAG to these users
+        st.session_state.is_rag = True
+
         logger.info(f"rag={st.session_state.is_rag}, assignment=emailhash")
 
 if 'ai' not in st.session_state:
     o_llm = OllamaLLM(
         host_url=os.environ["OLLAMA_HOST"],
-        temperature=const.TEMPERATURE, 
+        temperature=st.session_state.config.temperature, 
         model="dolphin3")
     a_llm = AzureOpenAILLM(
         api_key=os.environ["AZURE_OPENAI_API_KEY"],
         api_version=os.environ["AZURE_OPENAI_API_VERSION"],
         endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        model="gpt-4o-mini",
-        temperature=const.TEMPERATURE
+        model=st.session_state.config.ai_model,
+        temperature=st.session_state.config.temperature
     )    
     
     if os.environ.get("LLM","azure") == "ollama":
-        ai = LLMAPI(llm=o_llm, system_prompt=const.SYSTEM_PROMPT)
+        ai = LLMAPI(llm=o_llm, system_prompt=st.session_state.system_prompt_text)
         st.session_state.assistant_icon_offset = 2 + int(st.session_state.is_rag)
     else: # default is azure
-        ai = LLMAPI(llm=a_llm, system_prompt=const.SYSTEM_PROMPT)
+        ai = LLMAPI(llm=a_llm, system_prompt=st.session_state.system_prompt_text)
         st.session_state.assistant_icon_offset = 0 + int(st.session_state.is_rag)
     st.session_state.ai = ai
     logger.info(f"env:LLM={os.environ.get('LLM')}, llm_model={st.session_state.ai._model}, temperature={st.session_state.ai._temperature}")
     logger.info(f"assistant_icon_offset={st.session_state.assistant_icon_offset}")
 
+# ----------------- Chat Interface -----------------
 # set the avatars
 avatars =  {
     'user': const.USER_ICON,
@@ -184,14 +233,14 @@ for message in st.session_state.ai.history[2:]:
         st.markdown(message["content"])
 
 # React to user input
-if query := st.chat_input("Type in your question..."):
+if query := st.chat_input("Type in your question...", ):
     # Display user message in chat message container
     with st.chat_message("user", avatar=avatars["user"]):
         st.markdown(query)
 
     # Display assistant response in chat message container
     # this is the main RAG algorithm... simple rag.
-    with st.chat_message("assistant", avatar=avatars["assistant"]):
+    with st.chat_message("assistant", avatar=avatars["assistant"], ):
         with st.spinner("Thinking..."):
             user_prompt = query
             chat_logger.log_user_prompt(session, email, context, user_prompt)

@@ -43,6 +43,29 @@
                     "remoteRoot": "${workspaceFolder}"
                 }
             ]
+        },
+           {
+            "name": "Streamlit: Playground",
+            "request": "launch",
+            "type": "debugpy",
+            "module": "streamlit",
+            "args": [
+                "run",
+                "./chat/playground.py"
+            ],
+            "cwd": "${workspaceFolder}/app",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/app"
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "${workspaceFolder}"
+                }
+            ]
         }
+ 
     ]
 }

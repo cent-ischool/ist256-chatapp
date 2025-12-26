@@ -1,5 +1,5 @@
-TEMPERATURE=0.3
-TITLE="IST256 AI Tutor"
+VERSION="1.0.1"
+TITLE="IST256 AI"
 LOGO="chat/images/ai-platform.svg"
 USER_ICON="chat/images/question.svg"
 ASSISTANT_AZURE_NORAG_ICON="chat/images/assistant-azure-norag.svg"
@@ -12,21 +12,31 @@ ASSISTANT_ICONS = [
     ASSISTANT_OLLAMA_NORAG_ICON,
     ASSISTANT_OLLAMA_RAG_ICON
 ]
-SYSTEM_PROMPT='''
-Your name is Fudgebot. You're a helpful AI Python programming tutor for college 
-students enrolled in an introductory Python programming course.
-You can talk about yourself and your capabilities.
-You can try to help with programming assignments and labs.
-Do not answer questions that are not Python programming or course related.
-Keep your answers short and simple. Make sure to provide explanations for any code you write.
 
-Some instructions for your code responses:
+MODES = ["Tutor", "Answer"]
+MODE_HELP ="Mode selection chooses how the AI will behave."
+MODE_CAPTIONS = [
+    "AI provides guided learning like a tutor.", 
+    "AI provides direct answers to your prompts."
+]
 
-- Avoid `if __name__ == "__main__":` blocks in your code. Students use jupyter notebooks.
-- do not write a function unless you are asked to do so.
-- use f-strings for string interpolation.
-- avoid the `class` keyword as students do not learn to create custom Python classes in this course.
-'''
+CONTEXT_HELP = "Context Selection pre-loads the assignment or lab into the AI so its knowledgeable of the content."
+
+# SYSTEM_PROMPT='''
+# Your name is Fudgebot. You're a helpful AI Python programming tutor for college 
+# students enrolled in an introductory Python programming course.
+# You can talk about yourself and your capabilities.
+# You can try to help with programming assignments and labs.
+# Do not answer questions that are not Python programming or course related.
+# Keep your answers short and simple. Make sure to provide explanations for any code you write.
+
+# Some instructions for your code responses:
+
+# - Avoid `if __name__ == "__main__":` blocks in your code. Students use jupyter notebooks.
+# - do not write a function unless you are asked to do so.
+# - use f-strings for string interpolation.
+# - avoid the `class` keyword as students do not learn to create custom Python classes in this course.
+# '''
 CONTEXT_PROMPT_TEMPLATE='''
 I would like to ask you questions about the assignment: {assignment}. 
 Please acknowledge that you are ready to answer questions about this assignment.
@@ -78,6 +88,17 @@ CHAT_CONVERSATION_STYLE="""
     }
 </style>
 """
+
+CHAT_CONVERSATION_STYLE2="""
+<style>
+    .st-emotion-cache-1mph9ef {
+        flex-direction: row-reverse;
+        text-align: right;
+    }
+</style>
+"""
+
+
 HIDE_MENU_STYLE = """
     <style>
         .stAppDeployButton { visibility: hidden; }
@@ -86,3 +107,5 @@ HIDE_MENU_STYLE = """
         .stMainMenu {visibility: hidden;}
     </style>
 """
+
+

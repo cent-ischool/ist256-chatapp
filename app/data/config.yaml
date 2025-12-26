@@ -1,0 +1,5 @@
+configuration:
+  ai_model: gpt-5-nano
+  system_prompt: learning
+  temperature: 0.0
+  whitelist: roster.txt

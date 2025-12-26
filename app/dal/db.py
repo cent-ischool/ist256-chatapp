@@ -18,12 +18,20 @@ class PostgresDb:
 
 
 if __name__=='__main__':
+
     import os
+    from dotenv import load_dotenv
     from datetime import datetime, timezone
+
+    load_dotenv()
+
     log = LogModel(
         sessionid="124", 
         userid="mafudge@syr.edu", 
-        timestamp=datetime.now(timezone.utc).isoformat(), 
+        timestamp=datetime.now(timezone.utc).isoformat(),
+        model="gpt-4",
+        rag=False,
+        context="test context", 
         role="user", 
         content="Hello, world!"
     )

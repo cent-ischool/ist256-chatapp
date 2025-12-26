@@ -1,5 +1,28 @@
 TODO:
 
+v 1.0.2
+
+? playground.py is new UI
+    ? get ui state working properly
+    ? incorporate in AI
+    ? incorproate in prompts
+    ? incorporate in context / injection
+    ? get auth working
+
+Admin:
+? settings panel
+? settings model
+    - ai model
+    - system prompt
+    - temperature
+    - whitelist
+? pick a prompt 
+
+
+
+
+v1.0.1
+
 x library to build contexts from ipynb
 x library to load contexts in the app
 x build dropdown for selecting a context (lab-04, homework-04 etc.)
@@ -24,3 +47,4 @@ x limit access to roster of students ??
 x random assignment by netid. mafudge can pick
 x setup vecotor store on storage.cent-su.org
 x change logging to include rag=T/F, and ai model
+
