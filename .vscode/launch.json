@@ -45,13 +45,13 @@
             ]
         },
            {
-            "name": "Streamlit: Playground",
+            "name": "Streamlit: App v2",
             "request": "launch",
             "type": "debugpy",
             "module": "streamlit",
             "args": [
                 "run",
-                "./chat/playground.py"
+                "./chat/appnew.py"
             ],
             "cwd": "${workspaceFolder}/app",
             "console": "integratedTerminal",

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is an AI tutoring chatbot for the IST256 Python programming course at Syracuse University. Built with Streamlit, it provides context-aware assistance using Azure OpenAI with RAG (Retrieval-Augmented Generation) to inject course assignment content into responses.
+This is an AI tutoring chatbot for the IST256 Python programming course at Syracuse University. Built with Streamlit, it provides context-aware assistance using Azure OpenAI or Ollama. The app features always-on context injection (v1.0.5+) that prepends assignment content to the system prompt, providing assignment-specific guidance without vector search.
 
 ## Architecture
 
@@ -51,23 +51,29 @@ app/
 3. Three user types: admin, exception (whitelist), roster
 4. Session ID (UUID4) created per user
 
-**Chat Flow:**
-1. User selects assignment context (or "General Python")
-2. Assignment markdown loaded from `app/etl/filecache/`
-3. Context injected into system prompt using template in constants.py
-4. User message → LLM API (with full conversation history)
-5. Response streamed back to UI
-6. Both user prompt and assistant response logged to PostgreSQL
+**Chat Flow (v1.0.5+):**
+1. User selects mode (Tutor/Answer) and assignment context (or "General Python")
+2. If assignment selected: markdown loaded from `app/etl/filecache/` via FileCacheDocLoader
+3. Context injection: assignment content prepended to mode-specific system prompt
+4. Personalized greeting displayed with user's firstname and current mode/context
+5. User message → LLM API (with enhanced system prompt and full conversation history)
+6. Response streamed back to UI
+7. Both user prompt and assistant response logged to PostgreSQL (v1.0.6+)
 
 **Configuration:**
 - Runtime config stored in MinIO S3: `config.yaml` and `prompts.yaml`
 - Admin users can modify via settings/prompts pages
 - Changes persist to S3 and reload on next session
 
-**RAG Implementation:**
-- Assignment content injected as system message context (not vector search)
-- All users currently get RAG enabled (experimental random assignment disabled)
-- ChromaDB/vector search code exists but is commented out
+**Context Injection (v1.0.5+):**
+- Always-on: when user selects assignment, content is automatically injected
+- Strategy: Assignment markdown prepended to system prompt (not as separate message)
+- Template: `CONTEXT_PROMPT_TEMPLATE` in constants.py formats the injection
+- Enhanced system prompt = `context_injection + "\n\n" + base_system_prompt`
+- Base system prompt selected by mode: Tutor→"learning", Answer→"original"
+- Error handling: graceful fallback to base prompt if assignment file missing
+- No vector search/RAG: direct file-based context injection is simpler and effective
+- ChromaDB/vector search code exists but is commented out (legacy)
 
 ### LLM Backend Strategy Pattern
 

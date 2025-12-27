@@ -53,6 +53,22 @@ class ConfigurationModel(BaseModel):
         }
         return yaml.dump(data)
 
+# Let's fold up the session state into a single Object    
+# class SessionStateModel(BaseModel):
+#     sessionid: str = Field(primary_key=True)
+#     userid: str
+#     mode: str = "Tutor"
+#     context: str = "General Python"
+#     last_updated: datetime = Field(default_factory=datetime.utcnow)
+
+# # User Preferences Model - loaded and saved whenever the user changes mode/context
+# class UserPreferencesModel(SQLModel, table=True):
+#     __tablename__ = "user_preferences"
+#     user_email: str
+#     mode: str = "Tutor"
+#     context : str = "General Python"
+
+
 # Database Models
 class LogModel(SQLModel, table=True):
     __tablename__ = "logs"

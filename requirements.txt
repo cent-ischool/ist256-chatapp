@@ -16,6 +16,8 @@ nbformat
 nbconvert
 python-dotenv
 PyYAML
+streamlit-extras
+dotenv
 # chromadb-client
 # langchain-chroma
 # sentence-transformers

@@ -6,6 +6,12 @@ This directory contains detailed technical specifications and implementation pla
 
 | Version | Release Date | Status | Features |
 |---------|--------------|--------|----------|
+| v1.0.8  | TBD | In Development | UI polish, About/Help section, chat history download, enhanced error handling |
+| v1.0.7  | TBD | In Development | Admin menu integration (Settings, Prompts, Session pages) |
+| v1.0.6  | TBD | In Development | Chat logging to database with full metadata |
+| v1.0.5  | TBD | In Development | Always-on context injection, personalized greeting |
+| v1.0.4  | TBD | In Development | LLM Integration with mode-based prompts |
+| v1.0.3  | TBD | In Development | Database & Logging Infrastructure for appnew.py |
 | v1.0.2  | TBD | In Development | Authentication & Authorization for appnew.py |
 | v1.0.1  | 2025-01-15   | Released | Session page, version tracking, UI footer display |
 

@@ -57,7 +57,7 @@ with st.sidebar as sidebar:
 
     if auth_data:
         # Not authorized yet?
-        if 'validated' not in st.session_state or st.session_state.validated not in ["roster", "exception"]:
+        if 'validated' not in st.session_state or st.session_state.validated  not in ["roster", "exception"]:
             st.session_state.auth_data = auth_data
             st.session_state.auth_model = AuthModel.from_auth_data(auth_data)
             valid_users = get_roster(

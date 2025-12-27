@@ -1,4 +1,4 @@
-VERSION="1.0.2"
+VERSION="1.0.8"
 TITLE="IST256 AI"
 LOGO="chat/images/ai-platform.svg"
 USER_ICON="chat/images/question.svg"
@@ -38,17 +38,19 @@ CONTEXT_HELP = "Context Selection pre-loads the assignment or lab into the AI so
 # - avoid the `class` keyword as students do not learn to create custom Python classes in this course.
 # '''
 CONTEXT_PROMPT_TEMPLATE='''
-I would like to ask you questions about the assignment: {assignment}. 
-Please acknowledge that you are ready to answer questions about this assignment.
+You are assisting with the assignment: {assignment}
 
-Here is the content of that assignment:
+Here is the full assignment content:
 
 {content}
+
+---
+
 '''
-CONTEXT_PROMPT_TEMPLATE_NO_CONTENT='''
-I would like to ask you questions about the assignment: {assignment}. 
-Please acknowledge that you are ready to answer questions about this assignment.
-'''
+# CONTEXT_PROMPT_TEMPLATE_NO_CONTENT='''
+# I would like to ask you questions about the assignment: {assignment}. 
+# Please acknowledge that you are ready to answer questions about this assignment.
+# '''
 
 
 # RAG_PROMPT_TEMPLATE='''

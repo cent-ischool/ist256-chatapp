@@ -23,7 +23,6 @@ def show_settings():
     
 
     """Render the Settings page in Streamlit."""
-    st.set_page_config(page_title="Settings")
     st.title("Settings")
 
     st.markdown("Use this page to view and tweak session-level settings for the chat app.")
