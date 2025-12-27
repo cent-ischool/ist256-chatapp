@@ -1,6 +1,6 @@
 TODO:
 
-v 1.0.2
+Future versions
 
 ? playground.py is new UI
     ? get ui state working properly

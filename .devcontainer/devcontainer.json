@@ -15,7 +15,8 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"GitHub.copilot-chat"
+				"GitHub.copilot-chat",
+				"Anthropic.claude-code"
 			]
 		}
 	}
