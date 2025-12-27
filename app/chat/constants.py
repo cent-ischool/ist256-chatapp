@@ -105,7 +105,7 @@ A: Yes! When you select a specific assignment/lab, the full content is automatic
 A: Tutor mode uses Socratic teaching (guides you with questions), Answer mode provides direct solutions.
 
 **Q: Can I download my conversation?**
-A: Yes! Expand "AI Mode/Context" at the bottom, then Settings, and click "Download Chat History".
+A: Yes! Expand "AI Mode/Context" at the bottom. Click "Download Chat" for this session or "Download All" for all your sessions.
 
 **Q: Is my data private?**
 A: Conversations are logged to a secure database for course improvement. Only instructors can access logs.

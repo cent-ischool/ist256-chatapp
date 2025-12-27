@@ -130,6 +130,77 @@ def generate_chat_history_export() -> str:
 
     return "\n".join(lines)
 
+def generate_all_chats_export() -> str:
+    """
+    Generates a formatted text export of all chat sessions for the current user.
+    Queries the database to get all messages for this user.
+
+    Returns:
+        Formatted string with all chat sessions grouped by session ID
+    """
+    try:
+        from sqlmodel import select
+        from dal.models import LogModel
+
+        # Query database for all user's messages using SQLModel
+        with st.session_state.db.get_session() as session:
+            statement = select(LogModel).where(
+                LogModel.userid == st.session_state.auth_model.email
+            ).order_by(LogModel.timestamp)
+
+            results = session.exec(statement).all()
+
+        if not results:
+            return "No chat history found for this user."
+
+        lines = []
+        lines.append("=" * 60)
+        lines.append("IST256 AI - Complete Chat History")
+        lines.append("=" * 60)
+        lines.append(f"User: {st.session_state.auth_model.email}")
+        lines.append(f"Export Time: {datetime.now().isoformat()}")
+        lines.append(f"Total Messages: {len(results)}")
+        lines.append("=" * 60)
+        lines.append("")
+
+        # Group messages by session
+        current_session = None
+        message_num = 0
+
+        for log in results:
+            # New session header
+            if log.sessionid != current_session:
+                if current_session is not None:
+                    lines.append("")
+                    lines.append("=" * 60)
+                    lines.append("")
+
+                current_session = log.sessionid
+                message_num = 0
+                lines.append(f"SESSION: {log.sessionid}")
+                lines.append(f"Started: {log.timestamp}")
+                lines.append(f"Model: {log.model}")
+                lines.append(f"Context: {log.context}")
+                lines.append("-" * 60)
+                lines.append("")
+
+            # Message content
+            message_num += 1
+            lines.append(f"[{message_num}] {log.role.upper()}:")
+            lines.append(log.content)
+            lines.append("")
+
+        lines.append("")
+        lines.append("=" * 60)
+        lines.append("End of Chat History")
+        lines.append("=" * 60)
+
+        return "\n".join(lines)
+
+    except Exception as e:
+        logger.error(f"Failed to generate all chats export: user={st.session_state.auth_model.email}, error={e}")
+        return f"Error generating chat history: {str(e)}"
+
 # ----------------- Page And Sidebar Setup -----------------
 # page config
 st.set_page_config(
@@ -218,9 +289,6 @@ if 'file_cache' not in st.session_state:
     st.session_state.file_cache = FileCacheDocLoader(os.environ['LOCAL_FILE_CACHE'])
 if "new_session_context" not in st.session_state:
     set_context("Tutor", "General Python")
-
-# set a multiline textbox preference
-st.session_state.multiline_textbox = st.session_state.get("multiline_textbox", False)
 
 # other preferences
 context_list = ["General Python"]  + st.session_state.file_cache.get_doc_list()
@@ -372,43 +440,47 @@ else:  # Chat (default page)
     # React to user input
     #force these to the bottom of the page
     with bottom():
-        if st.session_state.multiline_textbox:
-            prompt = st.text_area("Your message:", value="")
-        else:
-            prompt = st.chat_input("Your message:")
+        prompt = st.chat_input("Your message:")
 
         expander_text = f"AI Mode: `{st.session_state.mode}` Context: `{st.session_state.context}`"
         with st.expander(expander_text, expanded=False):
             mode = st.radio("Select AI Mode:", options=const.MODES, index=const.MODES.index(st.session_state.mode), horizontal=False, captions=const.MODE_CAPTIONS, help=const.MODE_HELP)
             context = st.selectbox("Chat About:", options=context_list, index=context_list.index(st.session_state.context), help=const.CONTEXT_HELP)
-            col1, col2, col3 = st.columns([0.33, 0.33, 0.34])
+            col1, col2, col3, col4 = st.columns(4)
             with col1:
-                set_mode = st.button("🔁 Change Mode / New Chat", help="Switch chat context and mode. This will clear the chat history.")
+                set_mode = st.button("🔁 Save + New Chat", help="Switch chat context and mode. This will clear the chat history.")
             with col2:
                 reset_to_defaults = st.button("♻️ Reset To Defaults", help="Reset chat settings to defaults. This will clear the chat history.")
+            with col3:
+                # Chat history download (v1.0.8)
+                if len(st.session_state.messages) > 0:
+                    chat_history_text = generate_chat_history_export()
+                    st.download_button(
+                        label="📥 Download Chat",
+                        data=chat_history_text,
+                        file_name=f"chat_history_{st.session_state.sessionid[:8]}.txt",
+                        mime="text/plain",
+                        help="Download this conversation as a text file"
+                    )
+                    logger.info(f"Chat history download button displayed: session={st.session_state.sessionid}, messages={len(st.session_state.messages)}")
+                else:
+                    st.button("📥 Download Chat", disabled=True, help="No messages to download yet")
+            with col4:
+                # Download all chats (v1.0.8)
+                all_chats_text = generate_all_chats_export()
+                st.download_button(
+                    label="📥 Download All",
+                    data=all_chats_text,
+                    file_name=f"all_chats_{st.session_state.auth_model.email.split('@')[0]}_{datetime.now().strftime('%Y%m%d')}.txt",
+                    mime="text/plain",
+                    help="Download all your chat sessions from the database"
+                )
             if set_mode:
                 set_context(mode, context)
                 st.rerun()
             elif reset_to_defaults:
                 set_context("Tutor", "General Python")
                 st.rerun()
-            with st.expander("⚙️ Settings", expanded=False):
-                st.session_state.multiline_textbox = st.toggle("Multi-line Textbox", help="Choose between single-line and multi-line textbox for chat input.", value=st.session_state.get("multiline_textbox", False))
-
-                # Chat history download (v1.0.8)
-                if len(st.session_state.messages) > 0:
-                    if st.button("📥 Download Chat History", help="Download this conversation as a text file"):
-                        chat_history_text = generate_chat_history_export()
-                        st.download_button(
-                            label="💾 Save Chat History",
-                            data=chat_history_text,
-                            file_name=f"chat_history_{st.session_state.sessionid[:8]}.txt",
-                            mime="text/plain",
-                            help="Click to save your chat history to a file"
-                        )
-                        logger.info(f"Chat history downloaded: session={st.session_state.sessionid}, messages={len(st.session_state.messages)}")
-                else:
-                    st.info("💬 No messages to download yet. Start chatting to build your history!")
 
     # Take action on input
     if prompt:

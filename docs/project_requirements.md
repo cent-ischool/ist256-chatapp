@@ -189,6 +189,26 @@ This document tracks high-level feature requirements for the IST256 Chatapp orga
 
 ---
 
+## v1.0.9
+
+**Status**: Planned
+**Release Date**: TBD
+
+### Feature
+
+- Admin UI option to export of all chat logs in CSV or JSON format
+- exports as CSV or Array-based JSON
+- filename with timestamp
+
+
+### Technical Notes
+
+- Depends on: All previous versions (v1.0.2-v1.0.8)
+- Complexity: Low | Effort: 2-3 hours
+- Add "Export" After "Prompts" but before "Session" in admin menu
+
+---
+
 ## v2.0.0
 
 **Status**: Planned
