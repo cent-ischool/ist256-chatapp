@@ -8,10 +8,10 @@ This is a chatbot based on Open AI which is designed to function as an AI tutor 
 
 ## Running 
 
-Run with Strealit 
+Run with Streamlit 
 
-- app/chat/app.py <== main chat app
-- app/admin/app.py <== admin app
+- app/chat/app.py <== main chat app (old v1)
+- app/chat/appnew.py <== v2 of the app
 
 - chat/app.py Query String:
     - mode = chat | search

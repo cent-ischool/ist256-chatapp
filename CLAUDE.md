@@ -95,6 +95,10 @@ PostgreSQL table `LogModel`:
 
 ## Development Commands
 
+### Documentation
+
+Use the context7 MCP server and `requirements.txt` to ensure code compliance with project library dependecies.
+
 ### Running the Application
 
 **Local development:**
