@@ -6,6 +6,7 @@ This directory contains detailed technical specifications and implementation pla
 
 | Version | Release Date | Status | Features |
 |---------|--------------|--------|----------|
+| v1.0.2  | TBD | In Development | Authentication & Authorization for appnew.py |
 | v1.0.1  | 2025-01-15   | Released | Session page, version tracking, UI footer display |
 
 ## Directory Structure
