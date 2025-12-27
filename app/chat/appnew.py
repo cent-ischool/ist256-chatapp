@@ -5,6 +5,7 @@ import os
 import random
 from time import sleep
 from uuid import uuid4
+from datetime import datetime
 import yaml
 
 from loguru import logger
@@ -93,11 +94,41 @@ def stream_text(text: str):
             chunk = input_string[:chunk_size]  # Get the chunk
             chunks.append(chunk)  # Add it to the list
             input_string = input_string[chunk_size:]  # Remove the chunk from the input string
-        return chunks    
+        return chunks
     for chunk in split_string_randomly(text):
         yield chunk
-        sleep(random.uniform(0.01, 0.1))  # Simulate streaming delay     
+        sleep(random.uniform(0.01, 0.1))  # Simulate streaming delay
 
+def generate_chat_history_export() -> str:
+    """
+    Generates a formatted text export of the current chat session.
+
+    Returns:
+        Formatted string with session metadata and conversation history
+    """
+    lines = []
+    lines.append("=" * 60)
+    lines.append("IST256 AI Chat History")
+    lines.append("=" * 60)
+    lines.append(f"Session ID: {st.session_state.sessionid}")
+    lines.append(f"User: {st.session_state.auth_model.email}")
+    lines.append(f"Mode: {st.session_state.mode}")
+    lines.append(f"Context: {st.session_state.context}")
+    lines.append(f"Model: {st.session_state.config.ai_model}")
+    lines.append(f"Export Time: {datetime.now().isoformat()}")
+    lines.append("=" * 60)
+    lines.append("")
+
+    for idx, message in enumerate(st.session_state.messages, 1):
+        role = message["role"].upper()
+        content = message["content"]
+        lines.append(f"[{idx}] {role}:")
+        lines.append(content)
+        lines.append("")
+        lines.append("-" * 60)
+        lines.append("")
+
+    return "\n".join(lines)
 
 # ----------------- Page And Sidebar Setup -----------------
 # page config
@@ -151,7 +182,7 @@ with st.sidebar:
                 st.session_state.validated = "roster"
             else:
                 # ------------------ Unauthorized -----------------
-                st.error(f"UNAUTHORIZED: '{email}' is NOT listed on the class roster: '{os.environ['ROSTER_FILE']}'. If you feel this is in error, please contact mafudge@syr.edu.")
+                st.error(const.UNAUTHORIZED_MESSAGE)
                 st.session_state.clear()
                 st.stop()
     else: # Not authenticated
@@ -172,6 +203,12 @@ with st.sidebar:
             )
             st.session_state.admin_page = admin_page
             logger.debug(f"Admin menu: page selected = {admin_page}")
+
+    # ----------------- Sidebar: About & Help (v1.0.8) -----------------
+    with st.expander("ℹ️ About & Help", expanded=False):
+        st.markdown(const.ABOUT_PROMPT)
+        st.markdown(const.TIPS_TEXT)
+        st.markdown(const.FAQ_TEXT)
 
 
 
@@ -279,24 +316,24 @@ if current_page == "Settings":
         logger.info(f"Admin user {st.session_state.auth_model.email} navigated to Settings")
         show_settings()
     except Exception as e:
-        st.error("Unable to load Settings page. Please contact support.")
-        logger.error(f"Failed to load Settings page: {e}")
+        st.error("Unable to load Settings page. Try refreshing your browser. If the problem persists, contact mafudge@syr.edu.")
+        logger.error(f"Failed to load Settings page: user={st.session_state.auth_model.email}, error={e}", exc_info=True)
 elif current_page == "Prompts":
     try:
         from prompts import show_prompts
         logger.info(f"Admin user {st.session_state.auth_model.email} navigated to Prompts")
         show_prompts()
     except Exception as e:
-        st.error("Unable to load Prompts page. Please contact support.")
-        logger.error(f"Failed to load Prompts page: {e}")
+        st.error("Unable to load Prompts page. Try refreshing your browser. If the problem persists, contact mafudge@syr.edu.")
+        logger.error(f"Failed to load Prompts page: user={st.session_state.auth_model.email}, error={e}", exc_info=True)
 elif current_page == "Session":
     try:
         from session import show_session
         logger.info(f"Admin user {st.session_state.auth_model.email} navigated to Session")
         show_session()
     except Exception as e:
-        st.error("Unable to load Session page. Please contact support.")
-        logger.error(f"Failed to load Session page: {e}")
+        st.error("Unable to load Session page. Try refreshing your browser. If the problem persists, contact mafudge@syr.edu.")
+        logger.error(f"Failed to load Session page: user={st.session_state.auth_model.email}, error={e}", exc_info=True)
 else:  # Chat (default page)
     # ----------------- Chat Interface -----------------
     avatars =  {
@@ -311,7 +348,7 @@ else:  # Chat (default page)
     if st.session_state.new_session_context:
 
         with st.chat_message("assistant", avatar=avatars["assistant"]):
-            with st.spinner("Thinking..."):
+            with st.spinner("Preparing your session..."):
                 # Get user's firstname with fallback
                 firstname = st.session_state.auth_model.firstname if hasattr(st.session_state.auth_model, 'firstname') and st.session_state.auth_model.firstname else "Student"
 
@@ -357,7 +394,21 @@ else:  # Chat (default page)
                 st.rerun()
             with st.expander("⚙️ Settings", expanded=False):
                 st.session_state.multiline_textbox = st.toggle("Multi-line Textbox", help="Choose between single-line and multi-line textbox for chat input.", value=st.session_state.get("multiline_textbox", False))
-                st.write("TODO Download my chat history:")
+
+                # Chat history download (v1.0.8)
+                if len(st.session_state.messages) > 0:
+                    if st.button("📥 Download Chat History", help="Download this conversation as a text file"):
+                        chat_history_text = generate_chat_history_export()
+                        st.download_button(
+                            label="💾 Save Chat History",
+                            data=chat_history_text,
+                            file_name=f"chat_history_{st.session_state.sessionid[:8]}.txt",
+                            mime="text/plain",
+                            help="Click to save your chat history to a file"
+                        )
+                        logger.info(f"Chat history downloaded: session={st.session_state.sessionid}, messages={len(st.session_state.messages)}")
+                else:
+                    st.info("💬 No messages to download yet. Start chatting to build your history!")
 
     # Take action on input
     if prompt:
@@ -406,8 +457,18 @@ else:  # Chat (default page)
                         logger.error(f"Failed to log assistant response: {log_error}")
 
                 except Exception as e:
-                    error_message = f"I apologize, but I encountered an error: {str(e)}"
-                    st.error(error_message)
-                    logger.error(f"LLM streaming error: {e}")
+                    # Enhanced error handling with user-friendly messages (v1.0.8)
+                    error_str = str(e).lower()
+                    if "timeout" in error_str:
+                        user_message = "The AI is taking longer than usual. Please try again in a moment."
+                    elif "rate limit" in error_str or "429" in error_str:
+                        user_message = "The AI service is busy. Please wait a moment and try again."
+                    elif "connection" in error_str or "network" in error_str:
+                        user_message = "Unable to connect to the AI service. Please check your connection and try again."
+                    else:
+                        user_message = "I'm having trouble responding right now. Please try rephrasing your question or try again in a moment."
+
+                    st.error(user_message)
+                    logger.error(f"LLM streaming error: model={st.session_state.config.ai_model}, mode={st.session_state.mode}, context={st.session_state.context}, error={e}")
                     # Add error to chat history so user sees it on rerun
-                    st.session_state.messages.append({"role": "assistant", "content": error_message})
+                    st.session_state.messages.append({"role": "assistant", "content": f"⚠️ {user_message}"})

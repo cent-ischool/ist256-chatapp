@@ -82,6 +82,42 @@ Like a human tutor, its here to help you learn programming concepts and apply th
 -----
 '''
 
+TIPS_TEXT = """
+### Tips for Using the AI Tutor
+
+- **Choose Your Mode**: Tutor mode guides you to learn, Answer mode gives direct solutions
+- **Select Context**: Pick an assignment/lab to get specific help, or use "General Python" for anything
+- **Ask Specific Questions**: The AI works best with clear, detailed questions
+- **Iterate**: If the answer isn't helpful, rephrase your question or ask for clarification
+- **Session Memory**: The AI remembers your conversation until you change mode/context
+"""
+
+FAQ_TEXT = """
+### Frequently Asked Questions
+
+**Q: Why did my chat history disappear?**
+A: Chat history clears when you change Mode or Context, logout, or refresh the page.
+
+**Q: Can the AI see my assignment?**
+A: Yes! When you select a specific assignment/lab, the full content is automatically loaded.
+
+**Q: What's the difference between Tutor and Answer modes?**
+A: Tutor mode uses Socratic teaching (guides you with questions), Answer mode provides direct solutions.
+
+**Q: Can I download my conversation?**
+A: Yes! Expand "AI Mode/Context" at the bottom, then Settings, and click "Download Chat History".
+
+**Q: Is my data private?**
+A: Conversations are logged to a secure database for course improvement. Only instructors can access logs.
+"""
+
+UNAUTHORIZED_MESSAGE = """
+You are not authorized to access this application.
+
+If you are enrolled in IST256 for the current semester, please contact your instructor
+(mafudge@syr.edu) with your SU email address to request access.
+"""
+
 CHAT_CONVERSATION_STYLE="""
 <style>
     .st-emotion-cache-janbn0 {
