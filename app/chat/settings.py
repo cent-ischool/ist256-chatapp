@@ -21,7 +21,7 @@ def show_settings():
     prompts_yaml = s3client.get_text_file(
         os.environ["S3_BUCKET"],
         os.environ["PROMPTS_FILE"],
-        fallback_file_path="app/data/prompts.yaml"
+        fallback_file_path=os.environ.get("PROMPTS_FILE_FALLBACK","/app/data/prompts.yaml")
     )
     config = ConfigurationModel.from_yaml_string(config_yaml)
     prompts = yaml.safe_load(prompts_yaml)['prompts']
