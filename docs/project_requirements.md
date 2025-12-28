@@ -31,8 +31,8 @@ This document tracks high-level feature requirements for the IST256 Chatapp orga
 
 ## v1.0.2
 
-**Status**: Planned
-**Release Date**: TBD
+**Status**: Released
+**Release Date**: 2025-12-28
 
 ### Features
 
@@ -53,8 +53,8 @@ This document tracks high-level feature requirements for the IST256 Chatapp orga
 
 ## v1.0.3
 
-**Status**: Planned
-**Release Date**: TBD
+**Status**: Released
+**Release Date**: 2025-12-28
 
 ### Features
 
@@ -75,8 +75,8 @@ This document tracks high-level feature requirements for the IST256 Chatapp orga
 
 ## v1.0.4
 
-**Status**: Planned
-**Release Date**: TBD
+**Status**: Released
+**Release Date**: 2025-12-28
 
 ### Features
 
@@ -98,8 +98,8 @@ This document tracks high-level feature requirements for the IST256 Chatapp orga
 
 ## v1.0.5
 
-**Status**: Planned
-**Release Date**: TBD
+**Status**: Released
+**Release Date**: 2025-12-28
 
 ### Features
 
@@ -122,8 +122,8 @@ This document tracks high-level feature requirements for the IST256 Chatapp orga
 
 ## v1.0.6
 
-**Status**: Planned
-**Release Date**: TBD
+**Status**: Released
+**Release Date**: 2025-12-28
 
 ### Features
 
@@ -144,8 +144,8 @@ This document tracks high-level feature requirements for the IST256 Chatapp orga
 
 ## v1.0.7
 
-**Status**: Planned
-**Release Date**: TBD
+**Status**: Released
+**Release Date**: 2025-12-28
 
 ### Features
 
@@ -167,8 +167,8 @@ This document tracks high-level feature requirements for the IST256 Chatapp orga
 
 ## v1.0.8
 
-**Status**: Planned
-**Release Date**: TBD
+**Status**: Released
+**Release Date**: 2025-12-28
 
 ### Features
 
@@ -191,8 +191,8 @@ This document tracks high-level feature requirements for the IST256 Chatapp orga
 
 ## v1.0.9
 
-**Status**: Planned
-**Release Date**: TBD
+**Status**: Released
+**Release Date**: 2025-12-28
 
 ### Feature
 
@@ -209,6 +209,30 @@ This document tracks high-level feature requirements for the IST256 Chatapp orga
 
 ---
 
+
+## v1.0.10
+
+**Status**: Released
+**Release Date**: 2025-12-28
+
+### Feature
+
+- Let's store user preferences for mode and context in the database this way they persist across sessions
+
+### Technical Notes
+
+- There is a model for this already: UserPreferencesModel in @app/dal/models.py
+- create a @app/dal/user_preferences.py file to handle 2 operations get_preferences(user_email) and save_preferences(user_email, mode, context)
+- When the user logs in to the application, call get_preferences(user_email) to load their preferences if they exist, otherwise use defaults
+- When the user changes mode or context (clicks "Save + New Chat" or "Reset to Defaults" butttons) save their preferences to the database using save_preferences(user_email, mode, context)
+- Depends on: All previous versions (v1.0.2-v1.0.9)
+- Complexity: Low | Effort: 2-3 hours
+- Make sure the model is created in the DB on startup if it doesn't exist
+
+
+---
+
+
 ## v2.0.0
 
 **Status**: Planned
@@ -216,21 +240,18 @@ This document tracks high-level feature requirements for the IST256 Chatapp orga
 
 ### Features
 
-- Replace app.py with appnew.py as main application
-- New chat UI with mode selection (Tutor/Answer)
-- Context always injected (no RAG assignment)
-- Mode/context changes create new session
-- Initial greeting indicating mode and context
-- Full feature parity with v1.x
+- Rename app.py app_v1.py (keep for reference)
+- Rename appnew.py to app.py (main application)
+- Update launch.json and docker-compose.yaml to use new app.py
 
 ### Technical Notes
 
 - **Breaking change:** Major version bump
-- Backup old app.py before replacing
-- appnew.py becomes the main application
 - Update CLAUDE.md documentation
 - Update docker-compose.yaml entry point
-- New mode/context paradigm is standard
+- Make sure streamlit does not prompt for email on startup (set default args)
+- New mode/context paradigm is now standard
+- Change project_requirements.md to update **status** of released with a release date
 - Depends on: All previous versions complete
 - Complexity: Low | Effort: 2-3 hours
 - **Total v2.0 Epic Effort: 25-35 hours**
@@ -244,4 +265,6 @@ v1.0.5 → Context Injection
 v1.0.6 → Chat Logging
 v1.0.7 → Admin Pages
 v1.0.8 → Polish
+v1.0.9 → Export Logs
+v1.0.10 → Persistent User Preferences
 v2.0.0 → Release

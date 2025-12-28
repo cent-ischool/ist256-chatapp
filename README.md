@@ -6,15 +6,26 @@ This is the code repository for building the IST256 AI Tutor.
 
 This is a chatbot based on Open AI which is designed to function as an AI tutor for the IST256 course. The chatbot is designed to answer questions using the same style of python programming learned in the course. It will always explain any code it generates.
 
-## Running 
+## Running
 
-Run with Streamlit 
+Run with Streamlit:
 
-- app/chat/app.py <== main chat app (old v1)
-- app/chat/appnew.py <== v2 of the app
+```bash
+streamlit run app/chat/app.py
+```
 
-- chat/app.py Query String:
-    - mode = chat | search
-    - appid = the id of the registered application
-    - userid = unique id for the user (from qualtrics)
+**Production (v2.0+):**
+- `app/chat/app.py` - Main application with mode/context selection, user preferences, admin features
+
+**Legacy (v1):**
+- `app/chat/app_v1.py` - Original application (preserved for reference)
+
+## Features (v2.0)
+
+- **Mode Selection**: Tutor mode (guided learning) or Answer mode (direct solutions)
+- **Context Injection**: Always-on assignment content loading for context-aware assistance
+- **User Preferences**: Mode and context persist across sessions
+- **Chat Logging**: All conversations logged to PostgreSQL database
+- **Admin Features**: Settings, prompt editing, chat export (CSV/JSON), session debugging
+- **Download History**: Users can download their chat sessions
 

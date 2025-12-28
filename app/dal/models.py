@@ -61,12 +61,12 @@ class ConfigurationModel(BaseModel):
 #     context: str = "General Python"
 #     last_updated: datetime = Field(default_factory=datetime.utcnow)
 
-# # User Preferences Model - loaded and saved whenever the user changes mode/context
-# class UserPreferencesModel(SQLModel, table=True):
-#     __tablename__ = "user_preferences"
-#     user_email: str
-#     mode: str = "Tutor"
-#     context : str = "General Python"
+# User Preferences Model - loaded and saved whenever the user changes mode/context
+class UserPreferencesModel(SQLModel, table=True):
+    __tablename__ = "user_preferences"
+    user_email: str = Field(default=None, primary_key=True)
+    mode: str = "Tutor"
+    context : str = "General Python"
 
 
 # Database Models

@@ -29,7 +29,11 @@
             "module": "streamlit",
             "args": [
                 "run",
-                "./chat/app.py"
+                "./chat/app.py",
+                "--server.headless",
+                "true",
+                "--browser.gatherUsageStats",
+                "false"
             ],
             "cwd": "${workspaceFolder}/app",
             "console": "integratedTerminal",
@@ -45,13 +49,13 @@
             ]
         },
            {
-            "name": "Streamlit: App v2",
+            "name": "Streamlit: App (old v1)",
             "request": "launch",
             "type": "debugpy",
             "module": "streamlit",
             "args": [
                 "run",
-                "./chat/appnew.py"
+                "./chat/app_v1.py"
             ],
             "cwd": "${workspaceFolder}/app",
             "console": "integratedTerminal",

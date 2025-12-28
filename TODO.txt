@@ -6,12 +6,12 @@ TODO:
     - Removed st.set_page_config() conflicts from admin pages
     - All chat interface code wrapped in conditional
 
-[ ] code to dump all logs to a csv file based on logModel
+[x] code to dump all logs to a csv file based on logModel
 
-[ ] save settings across logins
+[x] save settings across logins
 
-[ ] refactor session config into its own pydantic class
+[] refactor session config into its own pydantic class
 
-[ ] Export chat history
+[x] Export chat history
 - this session
 - all sessions

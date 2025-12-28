@@ -3,7 +3,7 @@ from typing import Optional
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 # Import Db Models that need creating
-from dal.models import LogModel
+from dal.models import LogModel, UserPreferencesModel
 
 class PostgresDb:
 

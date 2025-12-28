@@ -6,6 +6,9 @@ This directory contains detailed technical specifications and implementation pla
 
 | Version | Release Date | Status | Features |
 |---------|--------------|--------|----------|
+| v2.0.0  | TBD | In Development | Production release: rename appnew.py to app.py, update deployment config, disable Streamlit email prompt |
+| v1.0.10 | TBD | In Development | User preferences persistence (mode and context stored in database) |
+| v1.0.9  | TBD | In Development | Admin UI option to export all chat logs in CSV or JSON format |
 | v1.0.8  | TBD | In Development | UI polish, About/Help section, chat history download, enhanced error handling |
 | v1.0.7  | TBD | In Development | Admin menu integration (Settings, Prompts, Session pages) |
 | v1.0.6  | TBD | In Development | Chat logging to database with full metadata |

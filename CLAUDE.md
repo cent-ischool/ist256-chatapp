@@ -13,8 +13,8 @@ This is an AI tutoring chatbot for the IST256 Python programming course at Syrac
 ```
 app/
 ├── chat/              # Streamlit UI and chat logic
-│   ├── app.py         # Main entry point - authentication, session, UI
-│   ├── appnew.py      # New entry point being built out
+│   ├── app.py         # Main entry point (v2.0) - authentication, session, UI, mode/context selection
+│   ├── app_v1.py      # Legacy v1 entry point (preserved for reference)
 │   ├── llmapi.py      # LLM client wrapper with conversation history
 │   ├── ragapi.py      # RAG implementation (currently unused)
 │   ├── docloader.py   # Loads assignment markdown from filecache
@@ -217,6 +217,11 @@ To update assignments: run `python app/etl/run.py`
 Admin users (defined in `ADMIN_USERS` env var) get sidebar access to:
 - **Settings** - modify AI model, system prompt, temperature, roster file
 - **Prompts** - edit system prompt templates
+- **Export** - export all chat logs to CSV or JSON format
+  - CSV format: Excel-compatible, includes all log fields
+  - JSON format: Array of log objects for programmatic access
+  - Filename includes timestamp for easy tracking
+  - Download button provided after generation
 - **Session** - view session debug info
 
 Changes persist to MinIO S3 and affect all users on next session.
