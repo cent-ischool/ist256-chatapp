@@ -122,8 +122,8 @@ with st.sidebar:
             st.session_state.auth_data = auth_data
             st.session_state.auth_model = AuthModel.from_auth_data(auth_data)
             # Load lists
-            admin_users = [ user.lower().strip() for user in os.environ["ADMIN_USERS"].split(",") ]
-            exception_users = [ user.lower().strip() for user in os.environ["ROSTER_EXCEPTION_USERS"].split(",") ]
+            admin_users = [ user.lower().strip() for user in os.environ.get("ADMIN_USERS","").split(",") ]
+            exception_users = [ user.lower().strip() for user in os.environ.get("ROSTER_EXCEPTION_USERS","").split(",") ]
             valid_users = [user.lower().strip() for user in get_roster(
                 os.environ["S3_HOST"],
                 os.environ["S3_ACCESS_KEY"],
