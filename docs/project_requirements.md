@@ -268,3 +268,27 @@ v1.0.8 → Polish
 v1.0.9 → Export Logs
 v1.0.10 → Persistent User Preferences
 v2.0.0 → Release
+
+
+---
+
+
+## v2.0.1
+
+**Status**: Planned
+**Release Date**: TBD
+
+### Features
+
+- Fix bug where app crashes if it cannot load the config or prompts from S3
+
+### Technical Notes
+
+- When app cannot read from S3 (because the files are not there yet), it should log an error and use a fallback file 
+- Update the s3_client.get_text_file() function to take a 4rd argument of a local fallback file path. 
+- log the error and then load in the fallback file from the file system 
+- example function call:
+    prompts_yaml = st.session_state.s3_client.get_text_file(os.environ["S3_BUCKET"], os.environ["PROMPTS_FILE"], os.environ["PROMPTS_FILE_FALLBACK"])
+- Depends on: v2.0.0
+- Complexity: Low | Effort: 2-3 hours
+

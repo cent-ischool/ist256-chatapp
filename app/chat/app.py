@@ -233,8 +233,16 @@ if "new_session_context" not in st.session_state:
 
 # chat configuration based on settings
 if 'config' not in st.session_state:
-    config_yaml = st.session_state.s3_client.get_text_file(os.environ["S3_BUCKET"], os.environ["CONFIG_FILE"])
-    prompts_yaml = st.session_state.s3_client.get_text_file(os.environ["S3_BUCKET"], os.environ["PROMPTS_FILE"])
+    config_yaml = st.session_state.s3_client.get_text_file(
+        os.environ["S3_BUCKET"],
+        os.environ["CONFIG_FILE"],
+        fallback_file_path="app/data/config.yaml"
+    )
+    prompts_yaml = st.session_state.s3_client.get_text_file(
+        os.environ["S3_BUCKET"],
+        os.environ["PROMPTS_FILE"],
+        fallback_file_path="app/data/prompts.yaml"
+    )
     config = ConfigurationModel.from_yaml_string(config_yaml)
     prompts = yaml.safe_load(prompts_yaml)['prompts']
     st.session_state.config = config

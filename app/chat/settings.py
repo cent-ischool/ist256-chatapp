@@ -13,8 +13,16 @@ def show_settings():
         secure=False
     )
 
-    config_yaml = s3client.get_text_file(os.environ["S3_BUCKET"], os.environ["CONFIG_FILE"])
-    prompts_yaml = s3client.get_text_file(os.environ["S3_BUCKET"], os.environ["PROMPTS_FILE"])
+    config_yaml = s3client.get_text_file(
+        os.environ["S3_BUCKET"],
+        os.environ["CONFIG_FILE"],
+        fallback_file_path="app/data/config.yaml"
+    )
+    prompts_yaml = s3client.get_text_file(
+        os.environ["S3_BUCKET"],
+        os.environ["PROMPTS_FILE"],
+        fallback_file_path="app/data/prompts.yaml"
+    )
     config = ConfigurationModel.from_yaml_string(config_yaml)
     prompts = yaml.safe_load(prompts_yaml)['prompts']
     prompt_keys = list(prompts.keys())

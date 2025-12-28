@@ -14,7 +14,11 @@ def show_prompts():
         secure=False
     )
     
-    prompts_yaml = s3client.get_text_file(os.environ["S3_BUCKET"], os.environ["PROMPTS_FILE"])
+    prompts_yaml = s3client.get_text_file(
+        os.environ["S3_BUCKET"],
+        os.environ["PROMPTS_FILE"],
+        fallback_file_path="app/data/prompts.yaml"
+    )
     prompts = yaml.safe_load(prompts_yaml)['prompts']
     prompt_keys = list(prompts.keys())
 
