@@ -314,7 +314,7 @@ if current_page == "Settings":
         logger.info(f"Admin user {st.session_state.auth_model.email} navigated to Settings")
         show_settings()
     except Exception as e:
-        st.error("Unable to load Settings page. Try refreshing your browser. If the problem persists, contact mafudge@syr.edu.")
+        st.error("Unable to load Settings page. Try refreshing your browser. If the problem persists, contact mafudge@syr.edu. ", e)
         logger.error(f"Failed to load Settings page: user={st.session_state.auth_model.email}, error={e}", exc_info=True)
 elif current_page == "Prompts":
     try:

@@ -1,4 +1,4 @@
-VERSION="2.0.1e"
+VERSION="2.0.1f"
 TITLE="IST256 AI"
 LOGO="chat/images/ai-platform.svg"
 USER_ICON="chat/images/question.svg"
