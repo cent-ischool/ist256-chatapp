@@ -1,5 +1,5 @@
 configuration:
-  ai_model: gpt-5-nano
+  ai_model: gpt-4o-mini
   system_prompt: learning
   temperature: 0.0
   whitelist: roster.txt

@@ -1,4 +1,5 @@
 from datetime import datetime
+from loguru import logger
 from pydantic import BaseModel
 from typing import Optional, List
 from sqlmodel import Field, SQLModel
@@ -32,15 +33,25 @@ class ConfigurationModel(BaseModel):
 
     @staticmethod
     def from_yaml_string(yaml_string: str):
-        data = yaml.safe_load(yaml_string)
-        config = data.get('configuration', {})
-        model =  ConfigurationModel(
-            ai_model=config.get('ai_model', 'gpt-5-nano'),
-            system_prompt=config.get('system_prompt', 'original'),
-            temperature=config.get('temperature', 0.0),
-            whitelist=config.get('whitelist', 'roster.txt')
-        )
-        return model
+        try:
+            data = yaml.safe_load(yaml_string)
+            config = data.get('configuration', {})
+            model =  ConfigurationModel(
+                ai_model=config.get('ai_model', 'gpt-5-nano'),
+                system_prompt=config.get('system_prompt', 'original'),
+                temperature=config.get('temperature', 0.0),
+                whitelist=config.get('whitelist', 'roster.txt')
+            )
+            return model
+        except Exception as e:
+            logger.error(f"Error loading ConfigurationModel from YAML: {e}")
+            mode = ConfigurationModel(
+                ai_model='gpt-4o-mini',
+                system_prompt='original',
+                temperature=0.0,
+                whitelist='roster.txt'
+            )
+            return model
 
     def to_yaml_string(self) -> str:
         data = {
