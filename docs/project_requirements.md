@@ -235,8 +235,8 @@ This document tracks high-level feature requirements for the IST256 Chatapp orga
 
 ## v2.0.0
 
-**Status**: Planned
-**Release Date**: TBD
+**Status**: Released
+**Release Date**: 2025-12-28
 
 ### Features
 
@@ -275,8 +275,8 @@ v2.0.0 → Release
 
 ## v2.0.1
 
-**Status**: Planned
-**Release Date**: TBD
+**Status**: Released
+**Release Date**: 2025-12-28
 
 ### Features
 
@@ -292,3 +292,33 @@ v2.0.0 → Release
 - Depends on: v2.0.0
 - Complexity: Low | Effort: 2-3 hours
 
+
+## v2.1.0
+
+**Status**: Planned
+**Release Date**: 2025-12-29
+
+### Features
+
+- Let's create a simpler design for settings. This will eliminate the need for a prompts.py
+- There are only 2 modes now: "Tutor" and "Answer" so we only need 2 system prompts
+- We can store these directly in the ConfigurationModel as fields
+
+### Technical Notes
+
+- Delete the prompts.py file entirely and remove any references to it in app.py
+- rename ConfigurationModel to AppSettingsModel
+- Add a new fields to AppSettingsModel:
+    - answer_prompt: str # LLM system prompt for "Answer" mode
+    - tutor_prompt: str # LLM system prompt for "Tutor" mode
+- Remove system_prompt field entirely
+- Update settings.py to load these prompts from S3 into the AppSettingsModel
+- Update from_yaml_string() to load settings gradefully if fields are missing
+    - here are the defaults:
+        - ai_model='gpt-4o-mini'
+        - temperature=0.0
+        - answer_prompt= "Your name is Answerbot. You're have knowledge of Python programming."
+        - tutor_prompt= "Your name is Tutorbot. You're a supportive AI Python programming tutor."
+        - whitelist= ""
+- Depends on: v2.0.1
+- Complexity: MMedium | Effort: 3-5 hours

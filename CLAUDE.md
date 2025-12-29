@@ -99,11 +99,24 @@ PostgreSQL table `LogModel`:
 - `role` - "user" or "assistant"
 - `content` - Message text
 
-## Development Commands
+## Programming Guidelines
 
 ### Documentation
 
 Use the context7 MCP server and `requirements.txt` to ensure code compliance with project library dependecies.
+
+### Programming Design Principles
+
+When contributing code, follow established design principles to maintain code quality and consistency.
+
+* **DRY (Don't Repeat Yourself):** Avoid duplicating code. Identify and reuse existing components or create new reusable ones.
+* **SOLID:** Follow the SOLID (Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, and Dependency Inversion) principals
+* **Modularity:** Ensure your changes are well-organized and don't tightly couple new code with unrelated parts of the application.
+* **Secure** Your specs should not leak passwords or API Keys
+
+
+## Development Commands
+
 
 ### Running the Application
 

@@ -23,46 +23,46 @@ class AuthModel(BaseModel):
         )
 
 
-class ConfigurationModel(BaseModel):
-    ai_model: str
-    system_prompt: str
-    temperature: float
-    whitelist: str
-    system_prompt_text: Optional[str] = None
-
+class AppSettingsModel(BaseModel):
+    """Application settings model - stores AI config and system prompts."""
+    ai_model: str = "gpt-4o-mini"
+    temperature: float = 0.0
+    answer_prompt: str = "Your name is Answerbot. You're have knowledge of Python programming."
+    tutor_prompt: str = "Your name is Tutorbot. You're a supportive AI Python programming tutor."
+    whitelist: str = ""
 
     @staticmethod
-    def from_yaml_string(yaml_string: str):
+    def from_yaml_string(yaml_string: str) -> "AppSettingsModel":
+        """Load settings gracefully, using defaults for missing fields."""
         try:
-            data = yaml.safe_load(yaml_string)
+            data = yaml.safe_load(yaml_string) or {}
             config = data.get('configuration', {})
-            model =  ConfigurationModel(
-                ai_model=config.get('ai_model', 'gpt-5-nano'),
-                system_prompt=config.get('system_prompt', 'original'),
+            return AppSettingsModel(
+                ai_model=config.get('ai_model', 'gpt-4o-mini'),
                 temperature=config.get('temperature', 0.0),
-                whitelist=config.get('whitelist', 'roster.txt')
+                answer_prompt=config.get('answer_prompt', "Your name is Answerbot. You're have knowledge of Python programming."),
+                tutor_prompt=config.get('tutor_prompt', "Your name is Tutorbot. You're a supportive AI Python programming tutor."),
+                whitelist=config.get('whitelist', '')
             )
-            return model
         except Exception as e:
-            logger.error(f"Error loading ConfigurationModel from YAML: {e}")
-            mode = ConfigurationModel(
-                ai_model='gpt-4o-mini',
-                system_prompt='original',
-                temperature=0.0,
-                whitelist='roster.txt'
-            )
-            return model
+            logger.error(f"Error loading AppSettingsModel from YAML: {e}")
+            return AppSettingsModel()  # Return model with all defaults
 
     def to_yaml_string(self) -> str:
         data = {
             'configuration': {
                 'ai_model': self.ai_model,
-                'system_prompt': self.system_prompt,
                 'temperature': self.temperature,
+                'answer_prompt': self.answer_prompt,
+                'tutor_prompt': self.tutor_prompt,
                 'whitelist': self.whitelist
             }
         }
         return yaml.dump(data)
+
+
+# Backwards compatibility alias (deprecated)
+ConfigurationModel = AppSettingsModel
 
 # Let's fold up the session state into a single Object    
 # class SessionStateModel(BaseModel):

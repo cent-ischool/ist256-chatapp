@@ -1,5 +1,6 @@
 configuration:
   ai_model: gpt-4o-mini
-  system_prompt: learning
   temperature: 0.0
-  whitelist: roster.txt
+  answer_prompt: "Your name is Answerbot. You're have knowledge of Python programming."
+  tutor_prompt: "Your name is Tutorbot. You're a supportive AI Python programming tutor."
+  whitelist: ""

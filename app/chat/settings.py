@@ -1,11 +1,12 @@
 import os
 import streamlit as st
-import yaml
 
 from dal.s3 import S3Client
-from dal.models import ConfigurationModel
+from dal.models import AppSettingsModel
+
 
 def show_settings():
+    """Render the Settings page in Streamlit."""
     s3client = S3Client(
         host_port=os.environ["S3_HOST"],
         access_key=os.environ["S3_ACCESS_KEY"],
@@ -13,50 +14,67 @@ def show_settings():
         secure=False
     )
 
+    # Load config from S3
     config_yaml = s3client.get_text_file(
         os.environ["S3_BUCKET"],
         os.environ["CONFIG_FILE"],
-        fallback_file_path="app/data/config.yaml"
+        fallback_file_path=os.environ.get("CONFIG_FILE_FALLBACK", "/app/data/config.yaml")
     )
-    prompts_yaml = s3client.get_text_file(
-        os.environ["S3_BUCKET"],
-        os.environ["PROMPTS_FILE"],
-        fallback_file_path=os.environ.get("PROMPTS_FILE_FALLBACK","/app/data/prompts.yaml")
-    )
-    config = ConfigurationModel.from_yaml_string(config_yaml)
-    prompts = yaml.safe_load(prompts_yaml)['prompts']
-    prompt_keys = list(prompts.keys())
+    config = AppSettingsModel.from_yaml_string(config_yaml)
+
+    # Get whitelist files from S3 bucket
     bucket_files = s3client.list_objects(os.environ["S3_BUCKET"], prefix="")
-    whitelist_files = [f for f in bucket_files if not f.endswith('.yaml')]
-    
+    whitelist_files = [""] + [f for f in bucket_files if not f.endswith('.yaml')]
 
-    """Render the Settings page in Streamlit."""
     st.title("Settings")
+    st.markdown("Configure AI model settings and system prompts.")
 
-    st.markdown("Use this page to view and tweak session-level settings for the chat app.")
-
-    #todo create a form bnased on the config model
+    # Model Settings Section
+    st.header("Model Settings")
     ai_model = st.text_input("AI Model", value=config.ai_model)
-    system_prompt = st.selectbox("System Prompt", options=prompt_keys, index=prompt_keys.index(config.system_prompt) if config.system_prompt in prompt_keys else 0)
-    temperature = st.slider("Temperature", min_value=0.0, max_value=1.0, value=float(config.temperature), step=0.05)
-    whitelist = st.selectbox("Whitelist File", options=whitelist_files, index=whitelist_files.index(config.whitelist) if config.whitelist in whitelist_files else 0)
-    st.header("Prompt Preview")
-    st.markdown(prompts[system_prompt])
+    temperature = st.slider(
+        "Temperature",
+        min_value=0.0,
+        max_value=1.0,
+        value=float(config.temperature),
+        step=0.05
+    )
+    whitelist = st.selectbox(
+        "Whitelist File",
+        options=whitelist_files,
+        index=whitelist_files.index(config.whitelist) if config.whitelist in whitelist_files else 0
+    )
 
+    # System Prompts Section
+    st.header("System Prompts")
+    st.markdown("Configure the AI's behavior in each mode.")
+
+    tutor_prompt = st.text_area(
+        "Tutor Mode Prompt",
+        value=config.tutor_prompt,
+        height=200,
+        help="Used when AI mode is 'Tutor' - guides students with questions"
+    )
+
+    answer_prompt = st.text_area(
+        "Answer Mode Prompt",
+        value=config.answer_prompt,
+        height=200,
+        help="Used when AI mode is 'Answer' - provides direct answers"
+    )
+
+    # Save Button
     submitted = st.button("Save Settings")
     if submitted:
-        #update config model
         config.ai_model = ai_model
-        config.system_prompt = system_prompt
         config.temperature = temperature
         config.whitelist = whitelist
+        config.tutor_prompt = tutor_prompt
+        config.answer_prompt = answer_prompt
 
-        #save to yaml
         yaml_string = config.to_yaml_string()
         s3client.put_text_file(os.environ["S3_BUCKET"], os.environ["CONFIG_FILE"], yaml_string)
         st.success("Settings saved successfully!")
         if st.button("Restart Application"):
             st.session_state.clear()
             st.rerun()
-            st.write("Application restarted. Reload the browser.")
-

@@ -5,7 +5,7 @@ class FileCacheDocLoader:
     def __init__(self, file_cache):
         self._file_cache = file_cache
 
-    def load_cached_document(self, key):
+    def load_cached_document(self, key) -> str:
         filespec = os.path.join(self._file_cache, key) + ".md"
         with open(filespec, "r") as file:
             return file.read()

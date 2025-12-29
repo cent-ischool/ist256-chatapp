@@ -1,4 +1,4 @@
-# IST256 AI Tutor Chatbot - v2.0.0
+# IST256 AI Tutor Chatbot - v2.1.0
 # Main application entry point
 # This file was previously named appnew.py and promoted to production in v2.0.0
 # For legacy v1 code, see app_v1.py
@@ -9,7 +9,6 @@ add_parent_path(1)
 import os
 from uuid import uuid4
 from datetime import datetime
-import yaml
 
 from loguru import logger
 import streamlit as st
@@ -20,7 +19,7 @@ from docloader import FileCacheDocLoader
 import constants as const
 from dal.s3 import S3Client
 from dal.db import PostgresDb
-from dal.models import AuthModel, ConfigurationModel
+from dal.models import AuthModel, AppSettingsModel
 from dal.chatlogger import ChatLogger
 from utils import get_roster, stream_text, generate_chat_history_export, generate_all_chats_export
 from llm.azureopenaillm import AzureOpenAILLM
@@ -42,11 +41,13 @@ def set_context(mode:str, context:str):
     st.session_state.messages = [] # this is "ai.clear_history()"
     if 'ai' in st.session_state:
         st.session_state.ai.clear_history()
-        # Apply context injection to system prompt based on mode and context
-        if 'prompts' in st.session_state:
-            mode_to_prompt_name = {"Tutor": "learning", "Answer": "original"}
-            prompt_name = mode_to_prompt_name[mode]
-            base_system_prompt = st.session_state.prompts[prompt_name]
+        # Apply context injection to system prompt based on mode and context (v2.1.0)
+        if 'config' in st.session_state:
+            # Get base prompt from config based on mode
+            if mode == "Tutor":
+                base_system_prompt = st.session_state.config.tutor_prompt
+            else:
+                base_system_prompt = st.session_state.config.answer_prompt
 
             # Get context-enhanced system prompt
             enhanced_system_prompt = get_context_injection(context, base_system_prompt)
@@ -65,7 +66,7 @@ def get_context_injection(context: str, system_prompt: str) -> str:
 
     Args:
         context: The assignment context or "General Python"
-        system_prompt: The base system prompt (from prompts.yaml based on mode)
+        system_prompt: The base system prompt (from config based on mode)
 
     Returns:
         Complete system prompt with context prepended if applicable
@@ -153,12 +154,12 @@ with st.sidebar:
 
 
 
-    # ----------------- Sidebar: Admin Menu (v1.0.7) -----------------
+    # ----------------- Sidebar: Admin Menu (v1.0.7, updated v2.1.0) -----------------
     if 'validated' in st.session_state and st.session_state.validated == "admin":
         with st.expander("👔 Admin Menu", expanded=False):
             admin_page = st.radio(
                 "Navigate to:",
-                options=["Chat", "Settings", "Prompts", "Export", "Session"],
+                options=["Chat", "Settings", "Export", "Session"],
                 index=0,
                 help="Administrative pages for managing the chat application"
             )
@@ -218,7 +219,18 @@ if 'file_cache' not in st.session_state:
 # other preferences
 context_list = ["General Python"]  + st.session_state.file_cache.get_doc_list()
 
-# Apply pending preferences now that file_cache is loaded (v1.0.10)
+# chat configuration based on settings (v2.1.0 - prompts now in config)
+# IMPORTANT: Must be loaded BEFORE set_context() so prompts are available
+if 'config' not in st.session_state:
+    config_yaml = st.session_state.s3_client.get_text_file(
+        os.environ["S3_BUCKET"],
+        os.environ["CONFIG_FILE"],
+        fallback_file_path=os.environ.get("CONFIG_FILE_FALLBACK","/app/data/config.yaml")
+    )
+    config = AppSettingsModel.from_yaml_string(config_yaml)
+    st.session_state.config = config
+
+# Apply pending preferences now that file_cache and config are loaded (v1.0.10)
 if "new_session_context" not in st.session_state:
     if 'pending_preferences' in st.session_state and st.session_state.pending_preferences is not None:
         prefs = st.session_state.pending_preferences
@@ -230,24 +242,6 @@ if "new_session_context" not in st.session_state:
     else:
         # First-time user or failed to load, use defaults
         set_context("Tutor", "General Python")
-
-# chat configuration based on settings
-if 'config' not in st.session_state:
-    config_yaml = st.session_state.s3_client.get_text_file(
-        os.environ["S3_BUCKET"],
-        os.environ["CONFIG_FILE"],
-        fallback_file_path=os.environ.get("CONFIG_FILE_FALLBACK","/app/data/config.yaml")
-    )
-    prompts_yaml = st.session_state.s3_client.get_text_file(
-        os.environ["S3_BUCKET"],
-        os.environ["PROMPTS_FILE"],
-        fallback_file_path=os.environ.get("PROMPTS_FILE_FALLBACK","/app/data/prompts.yaml")
-    )
-    config = ConfigurationModel.from_yaml_string(config_yaml)
-    prompts = yaml.safe_load(prompts_yaml)['prompts']
-    st.session_state.config = config
-    st.session_state.prompts = prompts  # Store prompts in session state
-    st.session_state.system_prompt_text = prompts[config.system_prompt]
     
 
 # chat logger setup (prepared for v1.0.6)
@@ -259,14 +253,17 @@ if 'chat_logger' not in st.session_state:
     )
     st.session_state.chat_logger = chat_logger
 
-# LLM backend initialization (v1.0.4)
+# LLM backend initialization (v1.0.4, updated v2.1.0)
 if 'ai' not in st.session_state:
     try:
-        # Mode-to-prompt mapping: Tutor uses Socratic "learning" prompt,
-        # Answer uses direct "original" prompt
-        mode_to_prompt_name = {"Tutor": "learning", "Answer": "original"}
-        prompt_name = mode_to_prompt_name[st.session_state.mode]
-        system_prompt = st.session_state.prompts[prompt_name]
+        # Get system prompt from config based on mode (v2.1.0)
+        if st.session_state.mode == "Tutor":
+            base_system_prompt = st.session_state.config.tutor_prompt
+        else:
+            base_system_prompt = st.session_state.config.answer_prompt
+
+        # Apply context injection to system prompt
+        system_prompt = get_context_injection(st.session_state.context, base_system_prompt)
 
         # Select backend based on LLM environment variable
         if os.environ["LLM"] == "azure":
@@ -314,16 +311,8 @@ if current_page == "Settings":
         logger.info(f"Admin user {st.session_state.auth_model.email} navigated to Settings")
         show_settings()
     except Exception as e:
-        st.error("Unable to load Settings page. Try refreshing your browser. If the problem persists, contact mafudge@syr.edu. ", e)
+        st.error("Unable to load Settings page. Try refreshing your browser. If the problem persists, contact mafudge@syr.edu. ")
         logger.error(f"Failed to load Settings page: user={st.session_state.auth_model.email}, error={e}", exc_info=True)
-elif current_page == "Prompts":
-    try:
-        from prompts import show_prompts
-        logger.info(f"Admin user {st.session_state.auth_model.email} navigated to Prompts")
-        show_prompts()
-    except Exception as e:
-        st.error("Unable to load Prompts page. Try refreshing your browser. If the problem persists, contact mafudge@syr.edu.")
-        logger.error(f"Failed to load Prompts page: user={st.session_state.auth_model.email}, error={e}", exc_info=True)
 elif current_page == "Export":
     try:
         from export import show_export
