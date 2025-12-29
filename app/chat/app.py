@@ -490,7 +490,7 @@ else:  # Chat (default page)
                     elif "connection" in error_str or "network" in error_str:
                         user_message = "Unable to connect to the AI service. Please check your connection and try again."
                     else:
-                        user_message = "I'm having trouble responding right now. Please try rephrasing your question or try again in a moment."
+                        user_message = f"I'm having trouble responding right now. Error: {e}"
 
                     st.error(user_message)
                     logger.error(f"LLM streaming error: model={st.session_state.config.ai_model}, mode={st.session_state.mode}, context={st.session_state.context}, error={e}")

@@ -246,6 +246,14 @@ from casstools.notebook_tools import NotebookFile
 NotebookFile().check_lab()
 ```
 
+    ❌ Not all code cells were executed.
+    ❌ Comfort level is blank.
+    ❌ Questions cell is blank. You should have a question or comment.
+    ❌ 1.2 you code does not have a code solution.
+    ❌ 1.3 you code does not have a code solution.
+    ❌ 1.4 you code does not have a code solution.
+
+
 ### Lab Submission
 
 Run this code and follow the instructions to turn in your lab. 
@@ -255,3 +263,20 @@ Run this code and follow the instructions to turn in your lab.
 from casstools.assignment import Assignment
 Assignment().submit()
 ```
+
+    ✅ TIMESTAMP  : 2025-08-19 11:20
+    ✅ COURSE     : ist256
+    ✅ TERM       : fall2025
+    ✅ USER       : mafudge@syr.edu
+    ✅ STUDENT    : True
+    ✅ PATH       : ist256/fall2025/lessons/02-Variables/LAB-Variables.ipynb
+    ✅ ASSIGNMENT : LAB-Variables.ipynb
+    ✅ POINTS     : 3
+    ✅ DUE DATE   : 2025-09-02 23:59
+    ✅ LATE       : False
+    ✅ STATUS     : New Submission
+    
+
+
+    ❓ Submit? [y/n] ❓  y
+

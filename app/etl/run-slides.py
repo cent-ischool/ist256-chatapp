@@ -5,58 +5,25 @@ from extract import UrlContentExtractor
 from transform import NotebookTransformer, extract_metadata
 
 DOCUMENT_BASE = "https://raw.githubusercontent.com/ist256/spring2026/refs/heads/main/lessons/"
-DOCUMENT_MANIFEST = [
-    "01-Intro/Content.ipynb",
-    "01-Intro/Slides.ipynb",
-    "01-Intro/LAB-Intro.ipynb",
-    "02-Variables/Content.ipynb",
-    "02-Variables/Slides.ipynb",
-    "02-Variables/LAB-Variables.ipynb",
-    "02-Variables/HW-Variables.ipynb",
-    "03-Conditionals/Content.ipynb",
-    "03-Conditionals/Slides.ipynb",
-    "03-Conditionals/LAB-Conditionals.ipynb",
-    "03-Conditionals/HW-Conditionals.ipynb",
-    "04-Iterations/Content.ipynb",
-    "04-Iterations/Slides.ipynb",
-    "04-Iterations/LAB-Iterations.ipynb",
-    "04-Iterations/HW-Iterations.ipynb",
-    "05-Functions/Content.ipynb",
-    "05-Functions/Slides.ipynb",
-    "05-Functions/LAB-Functions.ipynb",
-    "05-Functions/HW-Functions.ipynb",
-    "06-Strings/Content.ipynb",
-    "06-Strings/Slides.ipynb",
-    "06-Strings/LAB-Strings.ipynb",
-    "06-Strings/HW-Strings.ipynb",
-    "07-Files/Content.ipynb",
-    "07-Files/Slides.ipynb",
-    "07-Files/LAB-Files.ipynb",
-    "07-Files/HW-Files.ipynb",
-    "08-Lists/Content.ipynb",
-    "08-Lists/Slides.ipynb",
-    "08-Lists/LAB-Lists.ipynb",
-    "08-Lists/HW-Lists.ipynb",
-    "09-Dictionaries/Content.ipynb",
-    "09-Dictionaries/Slides.ipynb",
-    "09-Dictionaries/LAB-Dictionaries.ipynb",
-    "09-Dictionaries/HW-Dictionaries.ipynb",
-    "10-Pandas-I/Content.ipynb",
-    "10-Pandas-I/Slides.ipynb",
-    "10-Pandas-I/LAB-PandasI.ipynb",
-    "10-Pandas-I/HW-PandasI.ipynb",
-    "11-Pandas-II/Content.ipynb",
-    "11-Pandas-II/Slides.ipynb",
-    "11-Pandas-II/LAB-PandasII.ipynb",
-    "11-Pandas-II/HW-PandasII.ipynb",
-    "12-Visualization/Content.ipynb",
-    "12-Visualization/Slides.ipynb",
-    "12-Visualization/LAB-Visualization.ipynb",
-    "12-Visualization/HW-Visualization.ipynb",
-    "13-WebAPIs/Content.ipynb",
-    "13-WebAPIs/Slides.ipynb",
-    "13-WebAPIs/LAB-Webapis.ipynb",
-    "13-WebAPIs/HW-Webapis.ipynb",
+FOLDERS = [
+    "01-Intro",
+    "02-Variables",
+    "03-Conditionals",
+    "04-Iterations",
+    "05-Functions",
+    "06-Strings",
+    "07-Files",
+    "08-Lists",
+    "09-Dictionaries",
+    "10-Pandas-I",
+    "11-Pandas-II",
+    "12-Visualization",
+    "13-WebAPIs",
+    ]
+
+FILES= [
+    "Slides.ipynb",
+    "Content.ipynb"
 ]
 
 def run_etl():
@@ -73,14 +40,18 @@ def run_etl():
     # )
     # chroma_loader.reset_collection()
 
-    filecache = os.environ['LOCAL_FILE_CACHE'].replace('"','')
     # Extract
+    for folder in FOLDERS:
+        for file in FILES: 
+            doc = os.path.join(folder, file)
+
+
     for doc in DOCUMENT_MANIFEST:
-        extractor.extract_url(DOCUMENT_BASE, doc ,filecache)
+        extractor.extract_url(DOCUMENT_BASE, doc ,os.environ['LOCAL_FILE_CACHE'])
         logger.info(f"extracted={doc}, base={DOCUMENT_BASE}")
 
     # Transform
-    for notebook in glob(os.path.join(filecache, "*.ipynb")):
+    for notebook in glob(os.path.join(os.environ['LOCAL_FILE_CACHE'], "*.ipynb")):
         markdownFile = os.path.splitext(notebook)[0] + ".md"
         transformer = NotebookTransformer(notebook, metadata=extract_metadata(notebook))
         transformer.remove_empty_code_cells()

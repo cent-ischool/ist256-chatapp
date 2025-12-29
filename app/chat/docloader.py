@@ -11,7 +11,7 @@ class FileCacheDocLoader:
             return file.read()
         
     def get_doc_list(self):
-        return sorted([f.replace(".md","") for f in os.listdir(self._file_cache) if f.endswith(".md")])
+        return sorted([f.replace(".md","") for f in os.listdir(self._file_cache) if f.endswith(".md") and (f.find("LAB") != -1 or f.find("HW") != -1)])
 
 if __name__=='__main__':
     folder = os.environ['LOCAL_FILE_CACHE']
