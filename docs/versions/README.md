@@ -6,7 +6,8 @@ This directory contains detailed technical specifications and implementation pla
 
 | Version | Release Date | Status | Features |
 |---------|--------------|--------|----------|
-| v2.1.0  | TBD | In Development | Settings simplification - consolidate prompts into AppSettingsModel, remove prompts.py |
+| v2.2.0  | TBD | In Development | Roster management UI, enhanced session page with permission display |
+| v2.1.0  | 2026-01-13 | Testing | Settings simplification - consolidate prompts into AppSettingsModel, removed prompts.py |
 | v2.0.1  | TBD | In Development | S3 config fallback error handling - graceful degradation when S3 unavailable |
 | v2.0.0  | TBD | In Development | Production release: rename appnew.py to app.py, update deployment config, disable Streamlit email prompt |
 | v1.0.10 | TBD | In Development | User preferences persistence (mode and context stored in database) |

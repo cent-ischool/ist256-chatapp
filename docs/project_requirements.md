@@ -322,3 +322,24 @@ v2.0.0 → Release
         - whitelist= ""
 - Depends on: v2.0.1
 - Complexity: MMedium | Effort: 3-5 hours
+
+
+
+## v2.2.0
+
+**Status**: Planned
+**Release Date**: 2026-01-13
+
+### Features
+
+- Create an admin UI page to edit the content of the whitelist directly from the app
+- Update session in admin ui to a Section  users with permissions: admin, exception, roster users
+
+### Technical Notes
+
+- s3.py has a get_roster, it will need a put_roster() 
+- create a roster.py which allows you to edit the whitelist in a textarea and save it back to S3 (similar to settings.py)
+- modify session.py to add a Section which displays users with permissions: admin, exception, roster users
+- Depends on: v2.1.0
+- Complexity: MMedium | Effort: 3-5 hours
+

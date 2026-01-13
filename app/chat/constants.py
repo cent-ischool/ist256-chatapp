@@ -1,4 +1,4 @@
-VERSION="2.1.0"
+VERSION="2.2.0"
 TITLE="IST256 AI"
 LOGO="chat/images/ai-platform.svg"
 USER_ICON="chat/images/question.svg"
@@ -50,6 +50,10 @@ Here is the full assignment content:
 # CONTEXT_PROMPT_TEMPLATE_NO_CONTENT='''
 # I would like to ask you questions about the assignment: {assignment}. 
 # Please acknowledge that you are ready to answer questions about this assignment.
+
+# Here is the full assignment content:
+
+# {content}
 # '''
 
 
