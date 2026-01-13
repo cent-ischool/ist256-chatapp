@@ -343,3 +343,25 @@ v2.0.0 → Release
 - Depends on: v2.1.0
 - Complexity: MMedium | Effort: 3-5 hours
 
+
+## v2.2.1
+
+**Status**: Planned
+**Release Date**: 2026-01-13
+
+### Features
+
+- Cosmetic changes to roster / whitelist
+- Fix bugs in roster page
+- Rename roster as whitelist everywhere for consistency
+
+### Technical Notes
+
+- Fix app so that the roster whitelist file comes config.whitelist (os.environ["CONFIG_FILE"]) instead of os.environ["ROSTER_FILE"]
+- remove all referencces to os.environ["ROSTER_FILE"] should use config.whitelist
+- rename Roster to Whitelist everywhere in the codebase for consistency
+- rename roster.py to whitelist.py
+- modify whitelist.py to display the name of the whitelist file from config.whitelist
+- Depends on: v2.1.0
+- Complexity: MMedium | Effort: 3-5 hours
+

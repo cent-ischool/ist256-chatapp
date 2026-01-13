@@ -159,7 +159,7 @@ with st.sidebar:
         with st.expander("👔 Admin Menu", expanded=False):
             admin_page = st.radio(
                 "Navigate to:",
-                options=["Chat", "Settings", "Export", "Session"],
+                options=["Chat", "Settings", "Export", "Roster", "Session"],
                 index=0,
                 help="Administrative pages for managing the chat application"
             )
@@ -321,6 +321,14 @@ elif current_page == "Export":
     except Exception as e:
         st.error("Unable to load Export page. Try refreshing your browser. If the problem persists, contact mafudge@syr.edu.")
         logger.error(f"Failed to load Export page: user={st.session_state.auth_model.email}, error={e}", exc_info=True)
+elif current_page == "Roster":
+    try:
+        import roster
+        roster.show_roster()
+        logger.info(f"Admin user {st.session_state.auth_model.email} navigated to Roster")
+    except Exception as e:
+        st.error("Unable to load Roster page. Try refreshing your browser. If the problem persists, contact mafudge@syr.edu.")
+        logger.error(f"Failed to load Roster page: user={st.session_state.auth_model.email}, error={e}", exc_info=True)
 elif current_page == "Session":
     try:
         from session import show_session

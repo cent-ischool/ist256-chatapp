@@ -92,7 +92,26 @@ class S3Client:
         object_keys = [obj.object_name for obj in objects]
         logger.info(f"Listed {len(object_keys)} objects in s3://{bucket_name}/{prefix}")
         return object_keys
-    
+
+    def put_roster(self, bucket_name: str, object_key: str, emails: List[str]) -> None:
+        """
+        Upload roster file (comma-separated emails) to S3.
+
+        Args:
+            bucket_name: S3 bucket name
+            object_key: Object key (roster file name)
+            emails: List of email addresses
+
+        Returns:
+            None
+        """
+        # Join emails with commas (matching format of get_roster)
+        content = ",".join(emails)
+
+        # Use existing put_text_file method
+        self.put_text_file(bucket_name, object_key, content)
+        logger.info(f"Uploaded roster to s3://{bucket_name}/{object_key}, email_count={len(emails)}")
+
 
 # Leggacy function for getting roster
 def get_roster(
