@@ -14,17 +14,20 @@ def show_session():
     admin_users = [user.lower().strip() for user in os.environ.get("ADMIN_USERS", "").split(",") if user.strip()]
     exception_users = [user.lower().strip() for user in os.environ.get("ROSTER_EXCEPTION_USERS", "").split(",") if user.strip()]
 
+    # Get whitelist filename from config
+    whitelist_file = st.session_state.config.whitelist if st.session_state.config.whitelist else "whitelist.txt"
+
     try:
-        roster_users = [user.lower().strip() for user in get_roster(
+        whitelist_users = [user.lower().strip() for user in get_roster(
             os.environ["S3_HOST"],
             os.environ["S3_ACCESS_KEY"],
             os.environ["S3_SECRET_KEY"],
             os.environ["S3_BUCKET"],
-            os.environ["ROSTER_FILE"]
+            whitelist_file
         ) if user.strip()]
     except Exception as e:
-        st.error(f"Failed to load roster: {e}")
-        roster_users = []
+        st.error(f"Failed to load whitelist: {e}")
+        whitelist_users = []
 
     # Display current user's permission level
     if 'auth_model' in st.session_state:
@@ -36,7 +39,7 @@ def show_session():
     # Admin Users Section
     with st.expander(f"🔐 Admin Users ({len(admin_users)})", expanded=True):
         st.markdown("**Source:** `ADMIN_USERS` environment variable")
-        st.markdown("**Access:** Full admin access (Settings, Export, Roster, Session pages)")
+        st.markdown("**Access:** Full admin access (Settings, Export, Whitelist, Session pages)")
         if admin_users:
             for email in admin_users:
                 st.text(f"• {email}")
@@ -46,28 +49,28 @@ def show_session():
     # Exception Users Section
     with st.expander(f"⚡ Exception Users ({len(exception_users)})", expanded=False):
         st.markdown("**Source:** `ROSTER_EXCEPTION_USERS` environment variable")
-        st.markdown("**Access:** Bypass roster check, chat access only (no admin pages)")
+        st.markdown("**Access:** Bypass whitelist check, chat access only (no admin pages)")
         if exception_users:
             for email in exception_users:
                 st.text(f"• {email}")
         else:
             st.info("No exception users configured")
 
-    # Roster Users Section
-    with st.expander(f"📋 Roster Users ({len(roster_users)})", expanded=False):
-        st.markdown(f"**Source:** `{os.environ.get('ROSTER_FILE', 'roster.txt')}` in MinIO S3")
+    # Whitelist Users Section
+    with st.expander(f"📋 Whitelist Users ({len(whitelist_users)})", expanded=False):
+        st.markdown(f"**Source:** `{whitelist_file}` in MinIO S3")
         st.markdown("**Access:** Standard chat access (no admin pages)")
-        if roster_users:
+        if whitelist_users:
             # Show first 50, with option to see all
             display_count = 50
-            for email in roster_users[:display_count]:
+            for email in whitelist_users[:display_count]:
                 st.text(f"• {email}")
-            if len(roster_users) > display_count:
-                if st.button(f"Show all {len(roster_users)} emails"):
-                    for email in roster_users[display_count:]:
+            if len(whitelist_users) > display_count:
+                if st.button(f"Show all {len(whitelist_users)} emails"):
+                    for email in whitelist_users[display_count:]:
                         st.text(f"• {email}")
         else:
-            st.info("No roster users found (empty roster)")
+            st.info("No whitelist users found (empty whitelist)")
 
     # Authorization Logic Reference
     with st.expander("ℹ️ Authorization Logic", expanded=False):
@@ -79,10 +82,10 @@ def show_session():
         3. Authorization check (in order):
            - If email in **Admin Users** → Grant admin access
            - Else if email in **Exception Users** → Grant chat access
-           - Else if email in **Roster Users** → Grant chat access
+           - Else if email in **Whitelist Users** → Grant chat access
            - Else → **Deny access** (show unauthorized message)
 
-        **Note:** Admin users have full access including admin pages. Exception and Roster users have chat access only.
+        **Note:** Admin users have full access including admin pages. Exception and Whitelist users have chat access only.
         """)
 
     # Session State Section

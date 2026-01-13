@@ -155,17 +155,20 @@ def get_roster(
     object_key: str
     ) -> List[str]:
     """
-    Fetch roster file from S3 and return list of email addresses.
+    Fetch whitelist file from S3 and return list of email addresses.
+
+    Note: Function name is 'get_roster' for backwards compatibility,
+    but it fetches the whitelist file specified in config.whitelist.
 
     Args:
         minio_host_port: MinIO host and port (e.g., "host:9000")
         access_key: S3 access key
         secret_key: S3 secret key
         bucket_name: S3 bucket name
-        object_key: Object key (file path) in bucket
+        object_key: Object key (whitelist file path) in bucket
 
     Returns:
-        List of email addresses from roster file, or empty list if fetch fails
+        List of email addresses from whitelist file, or empty list if fetch fails
     """
     try:
         # Create a MinIO client
@@ -180,12 +183,12 @@ def get_roster(
         response = minio_client.get_object(bucket_name, object_key)
         file_content = response.read().decode('utf-8')
         emails = file_content.split(",")
-        logger.info(f"email_count={len(emails)}, host={minio_host_port}, roster={object_key}")
+        logger.info(f"email_count={len(emails)}, host={minio_host_port}, whitelist={object_key}")
 
         return emails
     except Exception as e:
-        logger.error(f"Failed to fetch roster from s3://{bucket_name}/{object_key}: {e}")
-        logger.warning("Returning empty roster list - all users will be denied access unless in exception list")
+        logger.error(f"Failed to fetch whitelist from s3://{bucket_name}/{object_key}: {e}")
+        logger.warning("Returning empty whitelist - all users will be denied access unless in exception list")
         return []
 
 

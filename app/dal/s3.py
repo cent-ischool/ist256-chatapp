@@ -93,13 +93,13 @@ class S3Client:
         logger.info(f"Listed {len(object_keys)} objects in s3://{bucket_name}/{prefix}")
         return object_keys
 
-    def put_roster(self, bucket_name: str, object_key: str, emails: List[str]) -> None:
+    def put_whitelist(self, bucket_name: str, object_key: str, emails: List[str]) -> None:
         """
-        Upload roster file (comma-separated emails) to S3.
+        Upload whitelist file (comma-separated emails) to S3.
 
         Args:
             bucket_name: S3 bucket name
-            object_key: Object key (roster file name)
+            object_key: Object key (whitelist file name)
             emails: List of email addresses
 
         Returns:
@@ -110,10 +110,16 @@ class S3Client:
 
         # Use existing put_text_file method
         self.put_text_file(bucket_name, object_key, content)
-        logger.info(f"Uploaded roster to s3://{bucket_name}/{object_key}, email_count={len(emails)}")
+        logger.info(f"Uploaded whitelist to s3://{bucket_name}/{object_key}, email_count={len(emails)}")
+
+    # Backwards compatibility alias
+    def put_roster(self, bucket_name: str, object_key: str, emails: List[str]) -> None:
+        """Deprecated: Use put_whitelist instead."""
+        logger.warning("put_roster is deprecated, use put_whitelist instead")
+        return self.put_whitelist(bucket_name, object_key, emails)
 
 
-# Leggacy function for getting roster
+# Legacy function for getting whitelist (kept for backwards compatibility)
 def get_roster(
     minio_host_port: str,
     access_key: str,
@@ -121,6 +127,12 @@ def get_roster(
     bucket_name: str,
     object_key: str
     ) -> List[str]:
+    """
+    Fetch whitelist file from S3 and return list of email addresses.
+
+    Note: Function name 'get_roster' kept for backwards compatibility.
+    This fetches the whitelist file specified in config.whitelist.
+    """
     # Create a MinIO client
     minio_client = Minio(
         minio_host_port,
@@ -129,13 +141,11 @@ def get_roster(
         secure=False  # Set to False if not using HTTPS
     )
 
-    # Specify the bucket and file to download
-
-    # Download the file
+    # Download the whitelist file
     response = minio_client.get_object(bucket_name, object_key)
     file_content = response.read().decode('utf-8')
     emails = file_content.split(",")
-    logger.info(f"email_count={len(emails)}, host={minio_host_port}, roster={object_key}")
+    logger.info(f"email_count={len(emails)}, host={minio_host_port}, whitelist={object_key}")
 
     return emails
 

@@ -102,6 +102,16 @@ st.markdown(const.HIDE_MENU_STYLE, unsafe_allow_html=True)
 # logo
 st.logo(const.LOGO)
 
+# ----------------- Initialize S3 Client Early (needed for config during auth) -----------------
+if 's3_client' not in st.session_state:
+    s3_client = S3Client(
+        host_port=os.environ["S3_HOST"],
+        access_key=os.environ["S3_ACCESS_KEY"],
+        secret_key=os.environ["S3_SECRET_KEY"],
+        secure=False
+    )
+    st.session_state.s3_client = s3_client
+
 # ============= Sidebar =============
 with st.sidebar:
     st.title(const.TITLE)
@@ -109,7 +119,7 @@ with st.sidebar:
 
     #  MSAL Authentication Widget
     auth_data = Msal.initialize_ui(
-        client_id=os.environ["MSAL_CLIENT_ID"], 
+        client_id=os.environ["MSAL_CLIENT_ID"],
         authority=os.environ["MSAL_AUTHORITY"],
         sign_out_label="Sign Out 🍊",
         disconnected_label="Sign In...",
@@ -125,12 +135,23 @@ with st.sidebar:
             # Load lists
             admin_users = [ user.lower().strip() for user in os.environ.get("ADMIN_USERS","").split(",") ]
             exception_users = [ user.lower().strip() for user in os.environ.get("ROSTER_EXCEPTION_USERS","").split(",") ]
+            # Load whitelist filename from config (requires config to be loaded first)
+            if 'config' not in st.session_state:
+                config_yaml = st.session_state.s3_client.get_text_file(
+                    os.environ["S3_BUCKET"],
+                    os.environ["CONFIG_FILE"],
+                    fallback_file_path=os.environ.get("CONFIG_FILE_FALLBACK","/app/data/config.yaml")
+                )
+                config = AppSettingsModel.from_yaml_string(config_yaml)
+                st.session_state.config = config
+
+            whitelist_file = st.session_state.config.whitelist if st.session_state.config.whitelist else "whitelist.txt"
             valid_users = [user.lower().strip() for user in get_roster(
                 os.environ["S3_HOST"],
                 os.environ["S3_ACCESS_KEY"],
                 os.environ["S3_SECRET_KEY"],
                 os.environ["S3_BUCKET"],
-                os.environ["ROSTER_FILE"]
+                whitelist_file
             )]
             # ----------------- Authorization -----------------
             email = st.session_state.auth_model.email
@@ -159,7 +180,7 @@ with st.sidebar:
         with st.expander("👔 Admin Menu", expanded=False):
             admin_page = st.radio(
                 "Navigate to:",
-                options=["Chat", "Settings", "Export", "Roster", "Session"],
+                options=["Chat", "Settings", "Export", "Whitelist", "Session"],
                 index=0,
                 help="Administrative pages for managing the chat application"
             )
@@ -176,15 +197,7 @@ with st.sidebar:
 
 
 # ----------------- Load Up the Initial Session State -----------------
-# s3 client config
-if 's3_client' not in st.session_state:
-    s3_client = S3Client(
-        host_port=os.environ["S3_HOST"],
-        access_key=os.environ["S3_ACCESS_KEY"],
-        secret_key=os.environ["S3_SECRET_KEY"],
-        secure=False
-    )
-    st.session_state.s3_client = s3_client
+# s3 client config - already initialized earlier (before auth)
 
 # database connection
 if 'db' not in st.session_state:
@@ -321,14 +334,14 @@ elif current_page == "Export":
     except Exception as e:
         st.error("Unable to load Export page. Try refreshing your browser. If the problem persists, contact mafudge@syr.edu.")
         logger.error(f"Failed to load Export page: user={st.session_state.auth_model.email}, error={e}", exc_info=True)
-elif current_page == "Roster":
+elif current_page == "Whitelist":
     try:
-        import roster
-        roster.show_roster()
-        logger.info(f"Admin user {st.session_state.auth_model.email} navigated to Roster")
+        import whitelist
+        whitelist.show_whitelist()
+        logger.info(f"Admin user {st.session_state.auth_model.email} navigated to Whitelist")
     except Exception as e:
-        st.error("Unable to load Roster page. Try refreshing your browser. If the problem persists, contact mafudge@syr.edu.")
-        logger.error(f"Failed to load Roster page: user={st.session_state.auth_model.email}, error={e}", exc_info=True)
+        st.error("Unable to load Whitelist page. Try refreshing your browser. If the problem persists, contact mafudge@syr.edu.")
+        logger.error(f"Failed to load Whitelist page: user={st.session_state.auth_model.email}, error={e}", exc_info=True)
 elif current_page == "Session":
     try:
         from session import show_session
