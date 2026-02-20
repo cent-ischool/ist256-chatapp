@@ -89,6 +89,7 @@ class LogModel(SQLModel, table=True):
     timestamp: str
     model: str
     rag: bool
+    mode: str
     context: str
     role: str
     content: str

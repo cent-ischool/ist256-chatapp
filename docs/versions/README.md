@@ -6,6 +6,7 @@ This directory contains detailed technical specifications and implementation pla
 
 | Version | Release Date | Status | Features |
 |---------|--------------|--------|----------|
+| v2.2.2  | TBD | In Development | Mode logging - add mode field to LogModel so Tutor/Answer mode is persisted in database |
 | v2.2.1  | TBD | In Development | Whitelist refactoring - use config.whitelist, rename roster to whitelist, bug fixes |
 | v2.2.0  | TBD | In Development | Roster management UI, enhanced session page with permission display |
 | v2.1.0  | 2026-01-13 | Testing | Settings simplification - consolidate prompts into AppSettingsModel, removed prompts.py |

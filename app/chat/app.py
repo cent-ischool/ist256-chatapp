@@ -457,6 +457,7 @@ else:  # Chat (default page)
             st.session_state.chat_logger.log_user_prompt(
                 st.session_state.sessionid,
                 st.session_state.auth_model.email,
+                st.session_state.mode,
                 st.session_state.context,
                 prompt
             )
@@ -483,6 +484,7 @@ else:  # Chat (default page)
                         st.session_state.chat_logger.log_assistant_response(
                             st.session_state.sessionid,
                             st.session_state.auth_model.email,
+                            st.session_state.mode,
                             st.session_state.context,
                             full_response
                         )

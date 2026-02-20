@@ -365,3 +365,24 @@ v2.0.0 → Release
 - Depends on: v2.1.0
 - Complexity: MMedium | Effort: 3-5 hours
 
+
+
+## v2.2.2
+
+**Status**: Planned
+**Release Date**: 2026-02-20
+
+### Features
+
+- Add `mode` field to `LogModel` so chat mode (Tutor/Answer) is recorded in the database with every log entry
+
+### Technical Notes
+
+- Add `mode: str` field to `LogModel` in `app/dal/models.py` (after the `rag` field)
+- Update `ChatLogger.log()` in `app/dal/chatlogger.py` to accept and store `mode`
+- Update `log_user_prompt()` and `log_assistant_response()` signatures to accept a `mode` parameter
+- Update `log_system_prompt()` to pass `mode="system"` for backward compatibility
+- Pass `st.session_state.mode` to both log calls in `app/chat/app.py`
+- `SQLModel.metadata.create_all()` will add the column on next startup for new installs; existing databases will need: `ALTER TABLE logs ADD COLUMN mode VARCHAR`
+- Depends on: v2.2.1
+- Complexity: Low | Effort: 1-2 hours
