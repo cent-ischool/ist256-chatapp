@@ -6,7 +6,9 @@
       "Bash(python test_v105.py:*)",
       "Bash(LOCAL_FILE_CACHE=/workspaces/ist256-chatapp/app/etl/filecache python:*)",
       "Bash(ls:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
