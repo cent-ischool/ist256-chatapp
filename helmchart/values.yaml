@@ -13,7 +13,9 @@ image:
   tag: <DOCKER_TAG>
 
 service:
-  type: ClusterIP
+  type: NodePort
+  nodePort: 30851
+  
 
 data:
   CI_BUILD: <CI_BUILD>
