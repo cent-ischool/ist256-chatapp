@@ -1,0 +1,44 @@
+# Default values for ist256-chatapp.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+clusterIssuer: letsencrypt-http
+port: 8501
+
+image:
+  name: ghcr.io/cent-ischool/ist256-chatapp
+  pullPolicy: IfNotPresent
+  tag: <DOCKER_TAG>
+
+service:
+  type: ClusterIP
+
+data:
+  CI_BUILD: <CI_BUILD>
+  FQDN: ai.ist256.com
+  DATABASE_URL: <SECRET>
+  MSAL_CLIENT_ID: f6958edd-646f-4e84-895a-ede5aa18036e
+  MSAL_AUTHORITY: https://login.microsoftonline.com/4278a402-1a9e-4eb9-8414-ffb55a5fcf1e
+  LLM: azure
+  OLLAMA_HOST: https://ollama-proxy.cent-su.org
+  AZURE_OPENAI_API_KEY: <SECRET>
+  AZURE_OPENAI_ENDPOINT: https://ist256-openai-instance.openai.azure.com/
+  AZURE_OPENAI_API_VERSION: 2024-08-01-preview
+  HUGGINGFACE_TOKEN: <SECRET>
+  CHROMADB_HOST: storage.cent-su.org
+  CHROMADB_PORT: 18078
+  CHROMA_CLIENT_AUTH_TOKEN: <SECRET>
+  S3_HOST: storage.cent-su.org:9000
+  S3_BUCKET: ist256chatapp
+  S3_ACCESS_KEY: <SECRET>
+  S3_SECRET_KEY: <SECRET>
+  ROSTER_FILE: ist256-fall2025-roster.txt
+  LOCAL_FILE_CACHE: /app/etl/filecache
+  PROMPTS_FILE: prompts.yaml
+  CONFIG_FILE: config.yaml
+  PROMPTS_FILE_FALLBACK: data/prompts.yaml
+  CONFIG_FILE_FALLBACK: data/config.yaml
+  ADMIN_USERS: mafudge@syr.edu
+  ROSTER_EXCEPTION_USERS: "ndlyga@syr.edu,jmstanto@syr.edu,byu@syr.edu,jmjordan@syr.edu,mafudge@syr.edu"

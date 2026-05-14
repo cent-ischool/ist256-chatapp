@@ -1,0 +1,81 @@
+name: Build Image and Publish, and deploy to k8s
+run-name: ${{ github.actor }} is 🔨 the app 🫙 and 🚀 to ☸️!
+on:
+    push:
+        branches:
+            - main
+env:
+    K8S_NAMESPACE: ist256-chatapp
+    HELM_RELEASE: ist256-chatapp
+    KUBE_CONFIG: kube.config
+
+jobs:
+    build:
+        name: 🔨 and 🫙 IST256 Chatapp Application
+        runs-on: [self-hosted, linux, cent]
+
+        steps:
+          - name: Checkout 👩‍💻
+            uses: actions/checkout@v4
+
+          - name: Build and Push Docker Image
+            uses: mr-smithers-excellent/docker-build-push@v6
+            with:
+              image: ist256-chatapp
+              tags: ${{github.sha}}
+              buildArgs: DOCKER_TAG=${{github.sha}}
+              addLatest: False
+              directory: .
+              dockerfile: ./Dockerfile
+              registry: ghcr.io
+              username: ${{secrets.GHCR_USERNAME}}
+              password: ${{secrets.GHCR_PASSWORD}}
+              pushImage: True
+
+    deploy:
+        name: 🚀 IST256 Chatapp Application to ☸️
+        runs-on: [self-hosted, linux, cent]
+        needs: [build]
+
+        steps:
+          - name: Checkout 👩‍💻
+            uses: actions/checkout@v4
+
+          - name: Get K8s Config
+            uses: mobiledevops/secret-to-file-action@v1
+            with:
+              base64-encoded-secret: ${{ secrets.KUBECONFIG_CENT_BASE64 }}
+              filename: "${{env.KUBE_CONFIG}}"
+              is-executable: false
+              working-directory: "."
+
+          - name: Test K8s Cluster config
+            run: |
+              kubectl --kubeconfig=./${{env.KUBE_CONFIG}} cluster-info
+
+          - name: Soft Create namespace
+            run: |
+                kubectl create namespace ${{env.K8S_NAMESPACE}} \
+                    --dry-run=client -o yaml | kubectl --kubeconfig=./${{env.KUBE_CONFIG}} apply -f -
+
+          - name: Soft Create ghcr secrets for login
+            run: |
+                kubectl create secret docker-registry ghcr-login-secret \
+                    --docker-server=https://ghcr.io \
+                    --docker-username=${{secrets.GHCR_USERNAME}} \
+                    --docker-password=${{secrets.GHCR_PASSWORD}} \
+                    --dry-run=client -o yaml | kubectl apply --kubeconfig=./${{env.KUBE_CONFIG}} \
+                    --namespace=${{env.K8S_NAMESPACE}} -f -
+
+          - name: Helm Deploy to Cluster
+            run: |
+              helm --kubeconfig=./${{env.KUBE_CONFIG}}  upgrade --install ${{ env.HELM_RELEASE}} ./helmchart \
+                -n ${{env.K8S_NAMESPACE}} -f ./helmchart/values.yaml \
+                --set-string data.CI_BUILD="${{ github.sha }}" \
+                --set-string image.tag="${{ github.sha }}" \
+                --set-string data.DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+                --set-string data.AZURE_OPENAI_API_KEY="${{ secrets.AZURE_OPENAI_API_KEY }}" \
+                --set-string data.HUGGINGFACE_TOKEN="${{ secrets.HUGGINGFACE_TOKEN }}" \
+                --set-string data.CHROMA_CLIENT_AUTH_TOKEN="${{ secrets.CHROMA_CLIENT_AUTH_TOKEN }}" \
+                --set-string data.S3_ACCESS_KEY="${{ secrets.S3_ACCESS_KEY }}" \
+                --set-string data.S3_SECRET_KEY="${{ secrets.S3_SECRET_KEY }}"

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Release.Name }}-app-service"
+  labels:
+    name: {{ .Release.Name }}
+    version: {{ .Values.data.CI_BUILD }}
+spec:
+  ports:
+  - name: {{ .Values.port }}tcp1
+    port: {{ .Values.port }}
+    protocol: TCP
+    targetPort: {{ .Values.port }}
+  selector:
+    app: {{ .Release.Name }}
+    component: webapp
+  type: {{ .Values.service.type }}

@@ -343,7 +343,6 @@ v2.0.0 → Release
 - Depends on: v2.1.0
 - Complexity: MMedium | Effort: 3-5 hours
 
-
 ## v2.2.1
 
 **Status**: Planned
@@ -386,3 +385,20 @@ v2.0.0 → Release
 - `SQLModel.metadata.create_all()` will add the column on next startup for new installs; existing databases will need: `ALTER TABLE logs ADD COLUMN mode VARCHAR`
 - Depends on: v2.2.1
 - Complexity: Low | Effort: 1-2 hours
+
+
+## v2.2.3
+
+**Status**: Cancelled
+**Decision Date**: 2026-03-20
+
+### Features
+
+- Add support for "Dark Mode" and "Light Mode" in the UI
+
+### Technical Notes
+
+- Research determined Streamlit already supports Light/Dark/System theme natively via the Settings menu (hamburger menu > Settings > Theme)
+- No reliable Streamlit plugin exists for programmatic theme toggling
+- Custom CSS injection approach would be fragile and require maintenance on every Streamlit upgrade
+- Decision: rely on Streamlit's built-in theme support — no custom implementation needed
